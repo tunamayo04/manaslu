@@ -20,12 +20,25 @@ impl Registers {
     pub fn new() -> Self {
         Self {
             accumulator: 0,
-            stack_pointer: 0xFD,
-            program_counter: 0x200,
+            stack_pointer: 0,
+            program_counter: 0,
             flags: 0b0010_0000,
             x: 0,
             y: 0,
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.accumulator = 0;
+        self.stack_pointer = 0;
+        self.program_counter = 0;
+        self.flags = 0b0010_0000;
+        self.x = 0;
+        self.y = 0;
+    }
+
+    pub fn increment_program_counter(&mut self, amount: u16) {
+        self.program_counter = self.program_counter.wrapping_add(amount);
     }
 
     pub fn set_flag(&mut self, flag: Flag, value: bool) {
