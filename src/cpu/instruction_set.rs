@@ -6,12 +6,12 @@ type Operation<T: MemoryIndexer> = fn(&Registers, &mut T);
 
 #[derive(Copy, Clone)]
 pub enum AddressingMode {
-    ZeroPageX,
-    ZeroPageY,
-    AbsoluteX,
-    AbsoluteY,
-    IndirectX,
-    IndirectY,
+    ZeroPageIndexedX,
+    ZeroPageIndexedY,
+    AbsoluteIndexedX,
+    AbsoluteIndexedY,
+    IndirectIndexedX,
+    IndirectIndexedY,
     Implicit,
     Accumulator,
     Immediate,

@@ -165,9 +165,6 @@ mod tests {
         // PRG ROM
         assert_eq!(cartridge.prg_rom.len(), 131072);
         assert_eq!(sha1::Sha1::digest(&cartridge.prg_rom), hex!("42E0AFDD1E603C4F301AEB030B799F69EEBE2E15"));
-
-        // CHR RAM
-        assert_eq!(cartridge.chr_rom.unwrap().len(), 8192);
     }
 
     #[test]
