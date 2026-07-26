@@ -1,5 +1,5 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
 
 pub mod registers;
@@ -49,42 +49,39 @@ impl<T: MemoryIndexer> CPU<T> {
         Ok(instruction)
     }
 
-    fn fetch_operand(&mut self, addressing_mode: AddressingMode, bus: &mut T) -> Option<u16> {
+    fn fetch_operand(&mut self, addressing_mode: AddressingMode, bus: &mut T) -> Option<Operand> {
         match addressing_mode {
             AddressingMode::ZeroPageIndexedX => {
                 let address = bus.read_byte(self.registers.program_counter);
                 self.registers.increment_program_counter(1);
 
                 let effective_address = address.wrapping_add(self.registers.x);
-                let value = bus.read_byte(effective_address as u16);
 
-                Some(value as u16)
+                Some(Operand::Address(effective_address as u16))
             }
             AddressingMode::ZeroPageIndexedY => {
                 let address = bus.read_byte(self.registers.program_counter);
                 self.registers.increment_program_counter(1);
 
                 let effective_address = address.wrapping_add(self.registers.y);
-                let value = bus.read_byte(effective_address as u16);
 
-                Some(value as u16)
+                Some(Operand::Address(effective_address as u16))
             }
             AddressingMode::AbsoluteIndexedX => {
                 let address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
 
                 let effective_address = address.wrapping_add(self.registers.x as u16);
-                let value = bus.read_byte(effective_address);
-                Some(value as u16)
+
+                Some(Operand::Address(effective_address))
             }
             AddressingMode::AbsoluteIndexedY => {
                 let address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
 
                 let effective_address = address.wrapping_add(self.registers.y as u16);
-                let value = bus.read_byte(effective_address);
 
-                Some(value as u16)
+                Some(Operand::Address(effective_address))
             }
             AddressingMode::IndirectIndexedX => {
                 let address = bus.read_byte(self.registers.program_counter);
@@ -92,8 +89,8 @@ impl<T: MemoryIndexer> CPU<T> {
 
                 let lookup_address = address.wrapping_add(self.registers.x);
                 let effective_address = bus.read_word(lookup_address as u16);
-                let value = bus.read_byte(effective_address);
-                Some(value as u16)
+
+                Some(Operand::Address(effective_address))
             }
             AddressingMode::IndirectIndexedY => {
                 let effective_address = bus.read_word(self.registers.program_counter);
@@ -101,42 +98,42 @@ impl<T: MemoryIndexer> CPU<T> {
 
                 let lookup_address = effective_address.wrapping_add(self.registers.y as u16);
                 let effective_address = bus.read_word(lookup_address);
-                let value = bus.read_byte(effective_address);
-                Some(value as u16)
+
+                Some(Operand::Address(effective_address))
             },
             AddressingMode::Implicit => None,
-            AddressingMode::Accumulator => Some(self.registers.accumulator as u16),
+            AddressingMode::Accumulator => Some(Operand::Value(self.registers.accumulator)),
             AddressingMode::Immediate => {
                 let value = bus.read_byte(self.registers.program_counter);
                 self.registers.increment_program_counter(1);
 
-                Some(value as u16)
+                Some(Operand::Value(value))
             }
             AddressingMode::ZeroPage => {
                 let address = bus.read_byte(self.registers.program_counter);
                 self.registers.increment_program_counter(1);
 
-                let value = bus.read_byte(address as u16);
-                Some(value as u16)
+                Some(Operand::Address(address as u16))
             },
             AddressingMode::Absolute => {
                 let address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
 
-                Some(bus.read_byte(address) as u16)
+                Some(Operand::Address(address))
             }
             AddressingMode::Relative => {
                 let offset = bus.read_byte(self.registers.program_counter) as i8;
                 self.registers.increment_program_counter(1);
 
-                Some(self.registers.program_counter.wrapping_add_signed(offset as i16))
+                Some(Operand::Address(self.registers.program_counter.wrapping_add_signed(offset as i16)))
             }
             AddressingMode::Indirect => {
                 let effective_address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
 
                 let effective_target = bus.read_word(effective_address);
-                Some(effective_target)
+
+                Some(Operand::Address(effective_target))
             }
         }
     }
@@ -145,6 +142,7 @@ impl<T: MemoryIndexer> CPU<T> {
 #[cfg(test)]
 mod tests {
     use crate::utils::testing::TestBus;
+    use std::assert_eq;
     use super::*;
 
     #[test]
@@ -207,8 +205,7 @@ mod tests {
         test_bus.write_byte(0xBEEF, 0xA9);
 
         let operand = cpu.fetch_operand(AddressingMode::Immediate, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0xA9);
+        assert_eq!(operand, Some(Operand::Value(0xA9)));
     }
 
     #[test]
@@ -222,8 +219,7 @@ mod tests {
         test_bus.write_byte(address, 0xA9);
 
         let operand = cpu.fetch_operand(AddressingMode::Absolute, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0xA9);
+        assert_eq!(operand, Some(Operand::Address(address)));
     }
 
     #[test]
@@ -237,8 +233,7 @@ mod tests {
         test_bus.write_byte(address as u16, 0xA9);
 
         let operand = cpu.fetch_operand(AddressingMode::ZeroPage, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0xA9);
+        assert_eq!(operand, Some(Operand::Address(address as u16)));
     }
 
     #[test]
@@ -253,8 +248,7 @@ mod tests {
         test_bus.write_byte(0x3132, 0x78);
 
         let operand = cpu.fetch_operand(AddressingMode::AbsoluteIndexedX, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x78);
+        assert_eq!(operand, Some(Operand::Address(0x3132)));
     }
 
     #[test]
@@ -269,8 +263,7 @@ mod tests {
         test_bus.write_byte(0x3132, 0x78);
 
         let operand = cpu.fetch_operand(AddressingMode::AbsoluteIndexedY, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x78);
+        assert_eq!(operand, Some(Operand::Address(0x3132)));
     }
 
     #[test]
@@ -285,8 +278,7 @@ mod tests {
         test_bus.write_byte(0x82, 0x64);
 
         let operand = cpu.fetch_operand(AddressingMode::ZeroPageIndexedX, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x64);
+        assert_eq!(operand, Some(Operand::Address(0x82)));
     }
 
     #[test]
@@ -301,8 +293,7 @@ mod tests {
         test_bus.write_byte(0x82, 0x64);
 
         let operand = cpu.fetch_operand(AddressingMode::ZeroPageIndexedY, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x64);
+        assert_eq!(operand, Some(Operand::Address(0x82)));
     }
 
     #[test]
@@ -316,8 +307,7 @@ mod tests {
         test_bus.write_word(first_address, 0x80C4);
 
         let operand = cpu.fetch_operand(AddressingMode::Indirect, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x80C4);
+        assert_eq!(operand, Some(Operand::Address(0x80C4)));
     }
 
     #[test]
@@ -334,8 +324,7 @@ mod tests {
         test_bus.write_byte(second_address, 0xA5);
 
         let operand = cpu.fetch_operand(AddressingMode::IndirectIndexedX, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0xA5);
+        assert_eq!(operand, Some(Operand::Address(second_address)));
     }
 
     #[test]
@@ -352,8 +341,7 @@ mod tests {
         test_bus.write_byte(second_address, 0xA5);
 
         let operand = cpu.fetch_operand(AddressingMode::IndirectIndexedY, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0xA5);
+        assert_eq!(operand, Some(Operand::Address(second_address)));
     }
 
     #[test]
@@ -364,8 +352,7 @@ mod tests {
         cpu.registers.program_counter = 0x1001;
         test_bus.write_byte(0x1001, 0x03);
         let operand = cpu.fetch_operand(AddressingMode::Relative, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x1005);
+        assert_eq!(operand, Some(Operand::Address(0x1005)));
     }
 
     #[test]
@@ -376,8 +363,7 @@ mod tests {
         cpu.registers.program_counter = 0x1001;
         test_bus.write_byte(0x1001, 0xFB); // -5
         let operand = cpu.fetch_operand(AddressingMode::Relative, &mut test_bus);
-        assert!(operand.is_some());
-        assert_eq!(operand.unwrap(), 0x0FFD);
+        assert_eq!(operand, Some(Operand::Address(0x0FFD)));
     }
     // endregion
 }

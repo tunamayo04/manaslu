@@ -92,10 +92,16 @@ pub enum InstructionType {
     NOP
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum Operand {
+    Value(u8),
+    Address(u16),
+}
+
 pub struct Instruction<T> {
     pub instruction_type: InstructionType,
     pub opcode: u8,
-    pub operand: Option<u16>,
+    pub operand: Option<Operand>,
     pub addressing_mode: AddressingMode,
     pub operation: Operation<T>,
 }
@@ -249,8 +255,11 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         }
     }
 
-    fn adc(instruction: &Instruction<T>, registers: &mut Registers, _: &mut T) -> Result<u8, String> {
-        let operand = instruction.operand.ok_or("Invalid operand")? as u8;
+    fn adc(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+        let operand = match instruction.operand.ok_or("test")? {
+            Operand::Address(address) => bus.read_byte(address),
+            Operand::Value(value) => value
+        };
 
         let a = registers.accumulator as u16;
         let result = a + operand as u16 + registers.get_flag(Flag::Carry) as u16;
@@ -276,8 +285,12 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         }
     }
 
-    fn and(instruction: &Instruction<T>, registers: &mut Registers, _: &mut T) -> Result<u8, String> {
-        let operand = instruction.operand.ok_or("Invalid operand")? as u8;
+    fn and(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+        let operand = match instruction.operand.ok_or("test")? {
+            Operand::Address(address) => bus.read_byte(address),
+            Operand::Value(value) => value
+        };
+
         registers.accumulator = registers.accumulator & operand;
 
         registers.set_flag(Flag::Zero, false);
@@ -292,20 +305,6 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             AddressingMode::AbsoluteIndexedY => Ok(4),
             AddressingMode::IndirectIndexedX => Ok(6),
             AddressingMode::IndirectIndexedY => Ok(5),
-            _ => Err(String::from("Invalid addressing mode")),
-        }
-    }
-
-    fn asl(instruction: &Instruction<T>, registers: &mut Registers, _: &mut T) -> Result<u8, String> {
-        let operand = instruction.operand.ok_or("Invalid operand")? as u8;
-        registers.accumulator = registers.accumulator << operand;
-
-        match instruction.addressing_mode {
-            AddressingMode::Accumulator => Ok(2),
-            AddressingMode::ZeroPage => Ok(5),
-            AddressingMode::ZeroPageIndexedX => Ok(6),
-            AddressingMode::Absolute => Ok(6),
-            AddressingMode::AbsoluteIndexedX => Ok(7),
             _ => Err(String::from("Invalid addressing mode")),
         }
     }
@@ -331,7 +330,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: ADC,
             opcode: 0x69,
-            operand: Some(0x01),
+            operand: Some(Operand::Value(0x01)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::adc,
         };
@@ -360,7 +359,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: ADC,
             opcode: 0x69,
-            operand: Some(0x01),
+            operand: Some(Operand::Value(0x01)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::adc,
         };
@@ -389,7 +388,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: ADC,
             opcode: 0x69,
-            operand: Some(0x01),
+            operand: Some(Operand::Value(0x01)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::adc,
         };
@@ -417,7 +416,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: ADC,
             opcode: 0x69,
-            operand: Some(0xFF),
+            operand: Some(Operand::Value(0xFF)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::adc,
         };
@@ -447,7 +446,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: AND,
             opcode: 0x29,
-            operand: Some(0b10101011),
+            operand: Some(Operand::Value(0b10101011)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::and,
         };
@@ -473,7 +472,7 @@ mod tests {
         let instruction = Instruction{
             instruction_type: AND,
             opcode: 0x29,
-            operand: Some(0b10101011),
+            operand: Some(Operand::Value(0b10101011)),
             addressing_mode: AddressingMode::Immediate,
             operation: InstructionSet::and,
         };
