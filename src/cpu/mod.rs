@@ -31,7 +31,7 @@ impl<T: MemoryIndexer> CPU<T> {
     fn step(&mut self, bus: &mut T) -> Result<(),String> {
         let next_instruction = self.fetch_next_instruction(bus)?;
 
-        (next_instruction.operation)(&self.registers, bus);
+        (next_instruction.operation)(&next_instruction, &mut self.registers, bus);
 
         Ok(())
     }
@@ -144,39 +144,8 @@ impl<T: MemoryIndexer> CPU<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::testing::TestBus;
     use super::*;
-
-    struct TestBus {
-        memory: Vec<u8>,
-    }
-    impl TestBus {
-        fn new() -> Self {
-            TestBus {
-                memory: vec![0; 0xFFFF],
-            }
-        }
-    }
-    impl MemoryIndexer for TestBus {
-        fn read_byte(&self, address: u16) -> u8 {
-            self.memory[address as usize]
-        }
-        fn write_byte(&mut self, address: u16, value: u8) {
-            self.memory[address as usize] = value;
-        }
-
-        fn read_word(&self, address: u16) -> u16 {
-            let lower_byte = self.memory[address as usize];
-            let upper_byte = self.memory[address.wrapping_add(1) as usize];
-            u16::from_le_bytes([lower_byte, upper_byte])
-        }
-
-        fn write_word(&mut self, address: u16, value: u16) {
-            let [lower_byte, upper_byte] = value.to_le_bytes();
-
-            self.memory[address as usize] = lower_byte;
-            self.memory[address.wrapping_add(1) as usize] = upper_byte;
-        }
-    }
 
     #[test]
     fn reset_resets_registers() {
@@ -214,7 +183,9 @@ mod tests {
         assert_eq!(instruction.unwrap().opcode, 0xA9);
     }
 
-    // Addressing modes
+    // region Instructions
+    #[test]
+    fn lda_sets_accumulator() {}
     #[test]
     fn implied_addressing_return_no_operand() {
         let mut cpu = CPU::new();
@@ -408,4 +379,5 @@ mod tests {
         assert!(operand.is_some());
         assert_eq!(operand.unwrap(), 0x0FFD);
     }
+    // endregion
 }

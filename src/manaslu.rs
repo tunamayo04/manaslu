@@ -1,5 +1,5 @@
 use std::path::Path;
-use crate::bus::{CpuBus, MemoryIndexer};
+use crate::bus::CpuBus;
 use crate::cartridge::Cartridge;
 use crate::cpu::CPU;
 
