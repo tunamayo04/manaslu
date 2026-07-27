@@ -60,14 +60,14 @@ mod tests {
 
     // ---- Carry Flag ----
     #[test]
-    fn reads_carry_flag()  {
+    fn reads_carry_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0000_0001;
 
         assert_eq!(registers.get_flag(Flag::Carry), true);
     }
     #[test]
-    fn writes_carry_flag()  {
+    fn writes_carry_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::Carry, true);
 
@@ -76,14 +76,14 @@ mod tests {
 
     // ---- Zero Flag ----
     #[test]
-    fn reads_zero_flag()  {
+    fn reads_zero_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0000_0010;
 
         assert_eq!(registers.get_flag(Flag::Zero), true);
     }
     #[test]
-    fn writes_zero_flag()  {
+    fn writes_zero_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::Zero, true);
 
@@ -92,14 +92,14 @@ mod tests {
 
     // ---- Interrupt Disable Flag ----
     #[test]
-    fn reads_interrupt_disable_flag()  {
+    fn reads_interrupt_disable_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0000_0100;
 
         assert_eq!(registers.get_flag(Flag::InterruptDisable), true);
     }
     #[test]
-    fn writes_interrupt_disable_flag()  {
+    fn writes_interrupt_disable_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::InterruptDisable, true);
 
@@ -108,14 +108,14 @@ mod tests {
 
     // ---- Decimal Mode Flag ----
     #[test]
-    fn reads_decimal_mode_flag()  {
+    fn reads_decimal_mode_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0000_1000;
 
         assert_eq!(registers.get_flag(Flag::DecimalMode), true);
     }
     #[test]
-    fn writes_decimal_mode_flag()  {
+    fn writes_decimal_mode_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::DecimalMode, true);
 
@@ -124,14 +124,14 @@ mod tests {
 
     // ---- B Flag ----
     #[test]
-    fn reads_b_flag()  {
+    fn reads_b_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0001_0000;
 
         assert_eq!(registers.get_flag(Flag::B), true);
     }
     #[test]
-    fn writes_b_flag()  {
+    fn writes_b_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::B, true);
 
@@ -140,14 +140,14 @@ mod tests {
 
     // ---- Overflow Flag ----
     #[test]
-    fn reads_overflow_flag()  {
+    fn reads_overflow_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b0100_0000;
 
         assert_eq!(registers.get_flag(Flag::Overflow), true);
     }
     #[test]
-    fn writes_overflow_flag()  {
+    fn writes_overflow_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::Overflow, true);
 
@@ -156,14 +156,14 @@ mod tests {
 
     // ---- Negative Flag ----
     #[test]
-    fn reads_negative_flag()  {
+    fn reads_negative_flag() {
         let mut registers = Registers::new();
         registers.flags = 0b1000_0000;
 
         assert_eq!(registers.get_flag(Flag::Negative), true);
     }
     #[test]
-    fn writes_negative_flag()  {
+    fn writes_negative_flag() {
         let mut registers = Registers::new();
         registers.set_flag(Flag::Negative, true);
 

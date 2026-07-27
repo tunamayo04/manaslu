@@ -4,7 +4,11 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn dec(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn dec(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let operand = instruction.operand.ok_or("test")?;
         let (address, operand_value) = match operand {
             Operand::Address(address) => (address, bus.read_byte(address)),
@@ -30,9 +34,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::{DEC, INC};
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn dec_instruction_positive() {
@@ -40,7 +44,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEC,
             opcode: 0xCE,
             operand: Some(Operand::Address(0xBEEF)),
@@ -66,7 +70,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEC,
             opcode: 0xCE,
             operand: Some(Operand::Address(0xBEEF)),
@@ -92,7 +96,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEC,
             opcode: 0xCE,
             operand: Some(Operand::Address(0xBEEF)),

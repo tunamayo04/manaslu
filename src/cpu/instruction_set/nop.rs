@@ -3,16 +3,20 @@ use crate::cpu::instruction_set::{Instruction, InstructionSet};
 use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub fn nop(_instruction: &Instruction<T>, _registers: &mut Registers, _bus: &mut T) -> Result<u8, String> {
+    pub fn nop(
+        _instruction: &Instruction<T>,
+        _registers: &mut Registers,
+        _bus: &mut T,
+    ) -> Result<u8, String> {
         Ok(2)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::{AddressingMode, InstructionType};
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn nop_returns_2_cycles() {

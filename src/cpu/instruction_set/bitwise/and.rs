@@ -4,10 +4,14 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn and(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn and(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let operand = match instruction.operand.ok_or("test")? {
             Operand::Address(address) => bus.read_byte(address),
-            Operand::Value(value) => value
+            Operand::Value(value) => value,
         };
 
         registers.accumulator = registers.accumulator & operand;
@@ -31,9 +35,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::AND;
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn and_instruction_positive() {
@@ -41,7 +45,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: AND,
             opcode: 0x29,
             operand: Some(Operand::Value(0b10101011)),
@@ -67,7 +71,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: AND,
             opcode: 0x29,
             operand: Some(Operand::Value(0b10101011)),

@@ -15,19 +15,15 @@ impl CpuBus {
     pub fn new(cartridge: Cartridge) -> Self {
         Self {
             ram: [0; 0x800],
-            cartridge
+            cartridge,
         }
     }
 }
 impl MemoryIndexer for CpuBus {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
-            0..=0x07FF => {
-                self.ram[address as usize]
-            }
-            0x0800..=0x1FFF => {
-                self.read_byte(address - 0x0800)
-            }
+            0..=0x07FF => self.ram[address as usize],
+            0x0800..=0x1FFF => self.read_byte(address - 0x0800),
             0x2000..=0x2007 => {
                 // PPU Registers
                 todo!()
@@ -44,13 +40,15 @@ impl MemoryIndexer for CpuBus {
             0x4020..=0xFFFF => {
                 todo!()
             }
-            _ => { todo!() }
+            _ => {
+                todo!()
+            }
         }
     }
 
     fn write_byte(&mut self, address: u16, value: u8) {
         match address {
-            _ => todo!()
+            _ => todo!(),
         }
     }
 
@@ -61,9 +59,7 @@ impl MemoryIndexer for CpuBus {
                 let high_nibble = self.ram[(address + 1) as usize];
                 u16::from_le_bytes([low_nibble, high_nibble])
             }
-            0x0800..=0x1FFF => {
-                self.read_word(address - 0x8000)
-            }
+            0x0800..=0x1FFF => self.read_word(address - 0x8000),
             0x2000..=0x2007 => {
                 // PPU Registers
                 todo!()
@@ -80,9 +76,8 @@ impl MemoryIndexer for CpuBus {
             0x4020..=0xFFFF => {
                 todo!()
             }
-            _ => todo!()
+            _ => todo!(),
         }
-
     }
 
     fn write_word(&mut self, address: u16, value: u16) {

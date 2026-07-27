@@ -23,7 +23,10 @@ pub struct INesHeader {
 impl INesHeader {
     pub fn from_bytes(bytes: &[u8; 16]) -> Result<Self, std::io::Error> {
         if bytes[0..4] != [0x4E, 0x45, 0x53, 0x1A] {
-            return Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid NES header"));
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Invalid NES header",
+            ));
         }
 
         let prg_rom_size = bytes[4];
@@ -131,12 +134,12 @@ impl Cartridge {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use hex_literal::hex;
     use sha1::Digest;
-    use super::*;
 
     #[test]
-    fn read_cartridge_correctly_from_file()  {
+    fn read_cartridge_correctly_from_file() {
         /* <game>
             <!-- Licensed Japan\Hello Kitty World.nes -->
             <prgrom size="131072" crc32="67D5C3F9" sha1="42E0AFDD1E603C4F301AEB030B799F69EEBE2E15" sum16="1FFF"/>
@@ -152,7 +155,10 @@ mod tests {
         // Header
         assert_eq!(cartridge.header.prg_rom_size, 8);
         assert_eq!(cartridge.header.chr_rom_size, 0);
-        assert_eq!(cartridge.header.nametable_mirroring, NametableMirroring::Vertical);
+        assert_eq!(
+            cartridge.header.nametable_mirroring,
+            NametableMirroring::Vertical
+        );
         assert_eq!(cartridge.header.contains_battery_pack, false);
         assert_eq!(cartridge.header.has_trainer, false);
         assert_eq!(cartridge.header.alternative_nametable_layout, false);
@@ -164,11 +170,14 @@ mod tests {
 
         // PRG ROM
         assert_eq!(cartridge.prg_rom.len(), 131072);
-        assert_eq!(sha1::Sha1::digest(&cartridge.prg_rom), hex!("42E0AFDD1E603C4F301AEB030B799F69EEBE2E15"));
+        assert_eq!(
+            sha1::Sha1::digest(&cartridge.prg_rom),
+            hex!("42E0AFDD1E603C4F301AEB030B799F69EEBE2E15")
+        );
     }
 
     #[test]
-    fn read_herebreke_cartridge_correctly_from_file()  {
+    fn read_herebreke_cartridge_correctly_from_file() {
         /*
         <game>
             <!-- Licensed Japan\Hebereke.nes -->
@@ -186,7 +195,10 @@ mod tests {
         // Header
         assert_eq!(cartridge.header.prg_rom_size, 8);
         assert_eq!(cartridge.header.chr_rom_size, 16);
-        assert_eq!(cartridge.header.nametable_mirroring, NametableMirroring::Horizontal);
+        assert_eq!(
+            cartridge.header.nametable_mirroring,
+            NametableMirroring::Horizontal
+        );
         assert_eq!(cartridge.header.contains_battery_pack, false);
         assert_eq!(cartridge.header.has_trainer, false);
         assert_eq!(cartridge.header.alternative_nametable_layout, false);
@@ -198,11 +210,17 @@ mod tests {
 
         // PRG ROM
         assert_eq!(cartridge.prg_rom.len(), 131072);
-        assert_eq!(sha1::Sha1::digest(&cartridge.prg_rom), hex!("64F18CA61861B6C4070B1450135D3160D8468F43"));
+        assert_eq!(
+            sha1::Sha1::digest(&cartridge.prg_rom),
+            hex!("64F18CA61861B6C4070B1450135D3160D8468F43")
+        );
 
         // CHR ROM
         assert!(cartridge.chr_rom.is_some());
         assert_eq!(cartridge.chr_rom.as_ref().unwrap().len(), 131072);
-        assert_eq!(sha1::Sha1::digest(&cartridge.chr_rom.unwrap()), hex!("5010BDBECE12FD0D19D2CB34F88EF3A5C05DC196"));
+        assert_eq!(
+            sha1::Sha1::digest(&cartridge.chr_rom.unwrap()),
+            hex!("5010BDBECE12FD0D19D2CB34F88EF3A5C05DC196")
+        );
     }
 }

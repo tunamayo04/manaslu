@@ -4,7 +4,11 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn iny(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn iny(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let result = registers.y.wrapping_add(1);
 
         registers.set_flag(Flag::Zero, result == 0);
@@ -18,9 +22,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::{INC, INX, INY};
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn iny_instruction_positive() {
@@ -28,7 +32,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: INY,
             opcode: 0xC8,
             operand: None,
@@ -52,7 +56,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: INY,
             opcode: 0xC8,
             operand: None,
@@ -78,7 +82,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: INY,
             opcode: 0xC8,
             operand: None,

@@ -2,7 +2,11 @@ use crate::cpu::instruction_set::{Instruction, InstructionSet, Operand};
 use crate::cpu::registers::{Flag, Registers};
 
 impl<T> InstructionSet<T> {
-    pub(crate) fn bcc(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String>{
+    pub(crate) fn bcc(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let operand = instruction.operand.ok_or("test")?;
         let branch_address = match operand {
             Operand::Address(address) => address,
@@ -20,17 +24,17 @@ impl<T> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::AddressingMode;
     use crate::cpu::instruction_set::InstructionType::BCC;
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn bcc_carry_set() {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: BCC,
             opcode: 0x90,
             operand: Some(Operand::Address(0xBEEF)),
@@ -52,7 +56,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: BCC,
             opcode: 0x90,
             operand: Some(Operand::Address(0xBEEF)),

@@ -4,21 +4,30 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn sbc(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn sbc(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let operand = match instruction.operand.ok_or("test")? {
             Operand::Address(address) => bus.read_byte(address),
-            Operand::Value(value) => value
+            Operand::Value(value) => value,
         };
 
         let a = registers.accumulator as u16;
-        let result = a.wrapping_add(!operand as u16).wrapping_add((registers.get_flag(Flag::Carry)) as u16);
+        let result = a
+            .wrapping_add(!operand as u16)
+            .wrapping_add((registers.get_flag(Flag::Carry)) as u16);
         let carry = result > 0xFF;
         let result = result as u8;
 
         registers.set_flag(Flag::Carry, carry);
         registers.set_flag(Flag::Zero, result == 0);
         registers.set_flag(Flag::Negative, is_negative(result));
-        registers.set_flag(Flag::Overflow, (a as u8 ^ operand) & (a as u8 ^ result) & 0x80 != 0);
+        registers.set_flag(
+            Flag::Overflow,
+            (a as u8 ^ operand) & (a as u8 ^ result) & 0x80 != 0,
+        );
         registers.accumulator = result;
 
         match instruction.addressing_mode {
@@ -37,9 +46,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::SBC;
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn sbc_no_borrow_sets_no_status_flags() {
@@ -47,7 +56,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: SBC,
             opcode: 0xE9,
             operand: Some(Operand::Value(0x01)),
@@ -77,7 +86,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: SBC,
             opcode: 0xE9,
             operand: Some(Operand::Value(0xFF)),
@@ -106,7 +115,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: SBC,
             opcode: 0xE9,
             operand: Some(Operand::Value(0xB0)),
@@ -135,7 +144,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: SBC,
             opcode: 0xE9,
             operand: Some(Operand::Value(0x01)),

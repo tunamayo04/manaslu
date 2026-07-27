@@ -2,8 +2,8 @@ use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
 
-pub mod registers;
 pub mod instruction_set;
+pub mod registers;
 
 pub const NMI_VECTOR: u16 = 0xFFFA;
 pub const RST_VECTOR: u16 = 0xFFFC;
@@ -28,7 +28,7 @@ impl<T: MemoryIndexer> CPU<T> {
         self.registers.program_counter = reset_address;
     }
 
-    fn step(&mut self, bus: &mut T) -> Result<(),String> {
+    fn step(&mut self, bus: &mut T) -> Result<(), String> {
         let next_instruction = self.fetch_next_instruction(bus)?;
 
         (next_instruction.operation)(&next_instruction, &mut self.registers, bus);
@@ -100,7 +100,7 @@ impl<T: MemoryIndexer> CPU<T> {
                 let effective_address = bus.read_word(lookup_address);
 
                 Some(Operand::Address(effective_address))
-            },
+            }
             AddressingMode::Implicit => None,
             AddressingMode::Accumulator => Some(Operand::Value(self.registers.accumulator)),
             AddressingMode::Immediate => {
@@ -114,7 +114,7 @@ impl<T: MemoryIndexer> CPU<T> {
                 self.registers.increment_program_counter(1);
 
                 Some(Operand::Address(address as u16))
-            },
+            }
             AddressingMode::Absolute => {
                 let address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
@@ -125,7 +125,11 @@ impl<T: MemoryIndexer> CPU<T> {
                 let offset = bus.read_byte(self.registers.program_counter) as i8;
                 self.registers.increment_program_counter(1);
 
-                Some(Operand::Address(self.registers.program_counter.wrapping_add_signed(offset as i16)))
+                Some(Operand::Address(
+                    self.registers
+                        .program_counter
+                        .wrapping_add_signed(offset as i16),
+                ))
             }
             AddressingMode::Indirect => {
                 let effective_address = bus.read_word(self.registers.program_counter);
@@ -141,9 +145,9 @@ impl<T: MemoryIndexer> CPU<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::utils::testing::TestBus;
     use std::assert_eq;
-    use super::*;
 
     #[test]
     fn reset_resets_registers() {

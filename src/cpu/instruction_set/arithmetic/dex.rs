@@ -4,7 +4,11 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn dex(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn dex(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let result = registers.x.wrapping_sub(1);
 
         registers.set_flag(Flag::Zero, result == 0);
@@ -18,9 +22,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::{DEX, INC, INX};
     use crate::utils::testing::TestBus;
-    use super::*;
 
     #[test]
     fn dex_instruction_positive() {
@@ -28,7 +32,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEX,
             opcode: 0xCA,
             operand: None,
@@ -54,7 +58,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEX,
             opcode: 0xCA,
             operand: None,
@@ -80,7 +84,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: DEX,
             opcode: 0xCA,
             operand: None,

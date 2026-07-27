@@ -4,29 +4,21 @@ use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn adc(
+    pub fn lda(
         instruction: &Instruction<T>,
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        let operand = match instruction.operand.ok_or("test")? {
-            Operand::Address(address) => bus.read_byte(address),
+        let operand = instruction.operand.ok_or("Missing operand")?;
+        let operand_value = match operand {
             Operand::Value(value) => value,
+            Operand::Address(address) => bus.read_byte(address),
         };
 
-        let a = registers.accumulator as u16;
-        let result = a + operand as u16 + registers.get_flag(Flag::Carry) as u16;
-        let carry = result > 0xFF;
-        let result = result as u8;
+        registers.set_flag(Flag::Zero, operand_value == 0);
+        registers.set_flag(Flag::Negative, is_negative(operand_value));
 
-        registers.set_flag(Flag::Carry, carry);
-        registers.set_flag(Flag::Zero, result == 0);
-        registers.set_flag(Flag::Negative, is_negative(result));
-        registers.set_flag(
-            Flag::Overflow,
-            (result ^ a as u8) & (result ^ operand) & 0x80 != 0,
-        );
-        registers.accumulator = result;
+        registers.accumulator = operand_value;
 
         match instruction.addressing_mode {
             AddressingMode::Immediate => Ok(2),
@@ -45,54 +37,48 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::ADC;
+    use crate::cpu::instruction_set::InstructionType::LDA;
     use crate::utils::testing::TestBus;
 
     #[test]
-    fn adc_sets_no_flags() {
+    fn lda_loads_non_zero_value_immediate() {
         // Arrange
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: ADC,
-            opcode: 0x69,
-            operand: Some(Operand::Value(0x01)),
+            instruction_type: LDA,
+            opcode: 0xA9,
+            operand: Some(Operand::Value(0x25)),
             addressing_mode: AddressingMode::Immediate,
-            operation: InstructionSet::adc,
+            operation: InstructionSet::lda,
         };
-
-        registers.accumulator = 0x01;
-        registers.set_flag(Flag::Carry, true);
 
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
         // Assert
         assert_eq!(result, Ok(2));
-        assert_eq!(registers.accumulator, 0x03);
-        assert_eq!(registers.get_flag(Flag::Carry), false);
+        assert_eq!(registers.accumulator, 0x25);
         assert_eq!(registers.get_flag(Flag::Zero), false);
         assert_eq!(registers.get_flag(Flag::Negative), false);
-        assert_eq!(registers.get_flag(Flag::Overflow), false);
     }
 
     #[test]
-    fn adc_sets_carry_flag_zero_result() {
+    fn lda_loads_zero_value_immediate() {
         // Arrange
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: ADC,
-            opcode: 0x69,
-            operand: Some(Operand::Value(0x01)),
+            instruction_type: LDA,
+            opcode: 0xA9,
+            operand: Some(Operand::Value(0x00)),
             addressing_mode: AddressingMode::Immediate,
-            operation: InstructionSet::adc,
+            operation: InstructionSet::lda,
         };
 
-        registers.accumulator = 0xFF;
-        registers.set_flag(Flag::Carry, false);
+        registers.accumulator = 0x25;
 
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
@@ -100,65 +86,57 @@ mod tests {
         // Assert
         assert_eq!(result, Ok(2));
         assert_eq!(registers.accumulator, 0x00);
-        assert_eq!(registers.get_flag(Flag::Carry), true);
         assert_eq!(registers.get_flag(Flag::Zero), true);
         assert_eq!(registers.get_flag(Flag::Negative), false);
-        assert_eq!(registers.get_flag(Flag::Overflow), false);
     }
 
     #[test]
-    fn adc_sets_overflow_flag_negative_result() {
+    fn lda_loads_negative_value_immediate() {
         // Arrange
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: ADC,
-            opcode: 0x69,
-            operand: Some(Operand::Value(0x01)),
-            addressing_mode: AddressingMode::Immediate,
-            operation: InstructionSet::adc,
-        };
-
-        registers.accumulator = 0x7F;
-
-        // Act
-        let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
-
-        // Assert
-        assert_eq!(result, Ok(2));
-        assert_eq!(registers.accumulator, 0x80);
-        assert_eq!(registers.get_flag(Flag::Overflow), true);
-        assert_eq!(registers.get_flag(Flag::Carry), false);
-        assert_eq!(registers.get_flag(Flag::Negative), true);
-        assert_eq!(registers.get_flag(Flag::Zero), false);
-    }
-
-    #[test]
-    fn adc_sets_overflow_flag_positive_result() {
-        // Arrange
-        let mut registers = Registers::new();
-        let mut test_bus = TestBus::new();
-
-        let instruction = Instruction {
-            instruction_type: ADC,
-            opcode: 0x69,
+            instruction_type: LDA,
+            opcode: 0xA9,
             operand: Some(Operand::Value(0xFF)),
             addressing_mode: AddressingMode::Immediate,
-            operation: InstructionSet::adc,
+            operation: InstructionSet::lda,
         };
-
-        registers.accumulator = 0x80;
 
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
         // Assert
         assert_eq!(result, Ok(2));
-        assert_eq!(registers.accumulator, 0x7F);
-        assert_eq!(registers.get_flag(Flag::Overflow), true);
-        assert_eq!(registers.get_flag(Flag::Carry), true);
-        assert_eq!(registers.get_flag(Flag::Negative), false);
+        assert_eq!(registers.accumulator, 0xFF);
         assert_eq!(registers.get_flag(Flag::Zero), false);
+        assert_eq!(registers.get_flag(Flag::Negative), true);
+    }
+
+    #[test]
+    fn lda_loads_value_from_address() {
+        // Arrange
+        let mut registers = Registers::new();
+        let mut test_bus = TestBus::new();
+
+        let instruction = Instruction {
+            instruction_type: LDA,
+            opcode: 0xA9,
+            operand: Some(Operand::Address(0xBEEF)),
+            addressing_mode: AddressingMode::Absolute,
+            operation: InstructionSet::lda,
+        };
+
+        test_bus.write_byte(0xBEEF, 0x25);
+
+        // Act
+        let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
+
+        // Assert
+        assert_eq!(result, Ok(4));
+        assert_eq!(registers.accumulator, 0x25);
+        assert_eq!(registers.get_flag(Flag::Zero), false);
+        assert_eq!(registers.get_flag(Flag::Negative), false);
     }
 }

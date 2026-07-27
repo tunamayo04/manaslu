@@ -3,11 +3,15 @@ use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, O
 use crate::cpu::registers::{Flag, Registers};
 
 impl<T: MemoryIndexer> InstructionSet<T> {
-    pub(crate) fn asl(instruction: &Instruction<T>, registers: &mut Registers, bus: &mut T) -> Result<u8, String> {
+    pub(crate) fn asl(
+        instruction: &Instruction<T>,
+        registers: &mut Registers,
+        bus: &mut T,
+    ) -> Result<u8, String> {
         let operand = instruction.operand.ok_or("test")?;
         let operand_value = match operand {
             Operand::Address(address) => bus.read_byte(address),
-            Operand::Value(value) => value
+            Operand::Value(value) => value,
         };
 
         let result = operand_value << 1;
@@ -34,10 +38,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::cpu::instruction_set::InstructionType::ASL;
     use crate::utils::testing::TestBus;
-    use super::*;
-
 
     #[test]
     fn asl_instruction_no_carry_positive_to_accumulator() {
@@ -45,7 +48,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: ASL,
             opcode: 0x0A,
             operand: Some(Operand::Value(0b00000001)),
@@ -70,7 +73,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: ASL,
             opcode: 0x0E,
             operand: Some(Operand::Address(0xBEEF)),
@@ -97,7 +100,7 @@ mod tests {
         let mut registers = Registers::new();
         let mut test_bus = TestBus::new();
 
-        let instruction = Instruction{
+        let instruction = Instruction {
             instruction_type: ASL,
             opcode: 0x0E,
             operand: Some(Operand::Address(0xBEEF)),
@@ -116,4 +119,5 @@ mod tests {
         assert_eq!(registers.get_flag(Flag::Carry), false);
         assert_eq!(registers.get_flag(Flag::Zero), false);
         assert_eq!(registers.get_flag(Flag::Negative), true);
-    }}
+    }
+}
