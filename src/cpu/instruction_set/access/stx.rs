@@ -1,6 +1,6 @@
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Registers};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub fn stx(
@@ -28,7 +28,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::{STX};
+    use crate::cpu::instruction_set::InstructionType::STX;
     use crate::utils::testing::TestBus;
 
     #[test]
