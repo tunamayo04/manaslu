@@ -16,6 +16,12 @@ pub struct Registers {
     pub x: u8,
     pub y: u8,
 }
+impl Default for Registers {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Registers {
     pub fn new() -> Self {
         Self {

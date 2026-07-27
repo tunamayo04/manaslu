@@ -1,13 +1,13 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
+use crate::cpu::instruction_set::{Instruction, InstructionSet};
 use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn dey(
-        instruction: &Instruction<T>,
+        _instruction: &Instruction<T>,
         registers: &mut Registers,
-        bus: &mut T,
+        _bus: &mut T,
     ) -> Result<u8, String> {
         let result = registers.y.wrapping_sub(1);
 
@@ -22,6 +22,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
+    use crate::cpu::instruction_set::AddressingMode;
     use super::*;
     use crate::cpu::instruction_set::InstructionType::DEY;
     use crate::utils::testing::TestBus;

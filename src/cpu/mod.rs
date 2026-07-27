@@ -13,6 +13,12 @@ pub struct CPU<T: MemoryIndexer> {
     registers: Registers,
     instruction_set: InstructionSet<T>,
 }
+impl<T: MemoryIndexer> Default for CPU<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: MemoryIndexer> CPU<T> {
     pub fn new() -> Self {
         Self {

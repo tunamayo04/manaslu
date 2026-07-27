@@ -5,7 +5,7 @@ impl<T> InstructionSet<T> {
     pub(crate) fn bcc(
         instruction: &Instruction<T>,
         registers: &mut Registers,
-        bus: &mut T,
+        _bus: &mut T,
     ) -> Result<u8, String> {
         let operand = instruction.operand.ok_or("test")?;
         let branch_address = match operand {

@@ -3,6 +3,12 @@ use crate::bus::MemoryIndexer;
 pub struct TestBus {
     memory: Vec<u8>,
 }
+impl Default for TestBus {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TestBus {
     pub fn new() -> Self {
         TestBus {

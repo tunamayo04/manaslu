@@ -9,7 +9,7 @@ use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
 use crate::cpu::registers::Registers;
 
-type Operation<T: MemoryIndexer> =
+type Operation<T> =
     fn(&Instruction<T>, &mut Registers, &mut T) -> Result<u8, String>;
 
 #[derive(Copy, Clone)]
@@ -122,6 +122,12 @@ impl<T> Copy for Instruction<T> {}
 pub struct InstructionSet<T> {
     instructions: [Option<Instruction<T>>; 256],
 }
+impl<T: MemoryIndexer> Default for InstructionSet<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub fn new() -> InstructionSet<T> {
         let mut instructions = std::array::from_fn(|_| None);
@@ -655,9 +661,6 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     }
 
     pub fn get_instruction(&self, opcode: u8) -> Option<Instruction<T>> {
-        match &self.instructions[opcode as usize] {
-            Some(instruction) => Some(*instruction),
-            None => None,
-        }
+        self.instructions[opcode as usize].as_ref().map(|instruction| *instruction)
     }
 }

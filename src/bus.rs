@@ -46,10 +46,8 @@ impl MemoryIndexer for CpuBus {
         }
     }
 
-    fn write_byte(&mut self, address: u16, value: u8) {
-        match address {
-            _ => todo!(),
-        }
+    fn write_byte(&mut self, _address: u16, _value: u8) {
+        todo!()
     }
 
     fn read_word(&self, address: u16) -> u16 {
@@ -80,7 +78,7 @@ impl MemoryIndexer for CpuBus {
         }
     }
 
-    fn write_word(&mut self, address: u16, value: u16) {
+    fn write_word(&mut self, _address: u16, _value: u16) {
         todo!()
     }
 }

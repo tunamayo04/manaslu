@@ -14,7 +14,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             Operand::Value(value) => value,
         };
 
-        registers.accumulator = registers.accumulator & operand;
+        registers.accumulator &= operand;
 
         registers.set_flag(Flag::Zero, false);
         registers.set_flag(Flag::Negative, is_negative(registers.accumulator));
