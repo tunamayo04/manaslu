@@ -2,6 +2,7 @@ pub mod arithmetic;
 pub mod bitwise;
 pub mod branch;
 pub mod shift;
+pub mod nop;
 
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
@@ -371,6 +372,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::Immediate,
             operation: Self::sbc,
+        });
+        instructions[0xEA] = Some(Instruction{
+            instruction_type: NOP,
+            opcode: 0xEA,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::nop,
         });
         instructions[0xED] = Some(Instruction{
             instruction_type: SBC,
