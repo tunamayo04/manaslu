@@ -1,11 +1,11 @@
-mod adc;
-mod and;
-mod asl;
-mod bcc;
+pub mod arithmetic;
+pub mod bitwise;
+pub mod branch;
+pub mod shift;
 
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
-use crate::cpu::registers::{Flag, Registers};
+use crate::cpu::registers::Registers;
 
 type Operation<T: MemoryIndexer> = fn(&Instruction<T>, &mut Registers, &mut T) -> Result<u8, String>;
 
@@ -276,6 +276,14 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operation: Self::adc,
         });
 
+        instructions[0x88] = Some(Instruction{
+            instruction_type: DEY,
+            opcode: 0x88,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::dey,
+        });
+
         instructions[0x90] = Some(Instruction{
             instruction_type: BCC,
             opcode: 0x90,
@@ -290,6 +298,136 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::Immediate,
             operation: Self::lda,
+        });
+
+        instructions[0xCA] = Some(Instruction{
+            instruction_type: DEX,
+            opcode: 0xCA,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::dex,
+        });
+        instructions[0xC6] = Some(Instruction{
+            instruction_type: DEC,
+            opcode: 0xAD,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::dec,
+        });
+        instructions[0xCE] = Some(Instruction{
+            instruction_type: DEC,
+            opcode: 0xCE,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::dec,
+        });
+
+        instructions[0xD6] = Some(Instruction{
+            instruction_type: DEC,
+            opcode: 0xD6,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPageIndexedX,
+            operation: Self::dec,
+        });
+        instructions[0xDE] = Some(Instruction{
+            instruction_type: DEC,
+            opcode: 0xDE,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedX,
+            operation: Self::dec,
+        });
+
+        instructions[0xE1] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xE1,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedX,
+            operation: Self::sbc,
+        });
+        instructions[0xE5] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xE5,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::sbc,
+        });
+        instructions[0xE6] = Some(Instruction{
+            instruction_type: INC,
+            opcode: 0xE6,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::inc,
+        });
+        instructions[0xE8] = Some(Instruction{
+            instruction_type: INX,
+            opcode: 0xE8,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::inx,
+        });
+        instructions[0xE9] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xE9,
+            operand: None,
+            addressing_mode: AddressingMode::Immediate,
+            operation: Self::sbc,
+        });
+        instructions[0xED] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xED,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::sbc,
+        });
+        instructions[0xEE] = Some(Instruction{
+            instruction_type: INC,
+            opcode: 0xEE,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::inc,
+        });
+
+        instructions[0xF1] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xF1,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedY,
+            operation: Self::sbc,
+        });
+        instructions[0xF5] = Some(Instruction{
+            instruction_type: BEQ,
+            opcode: 0xF5,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPageIndexedX,
+            operation: Self::sbc,
+        });
+        instructions[0xF6] = Some(Instruction{
+            instruction_type: INC,
+            opcode: 0xF6,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPageIndexedX,
+            operation: Self::inc,
+        });
+        instructions[0xF9] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xF9,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedY,
+            operation: Self::sbc,
+        });
+        instructions[0xFD] = Some(Instruction{
+            instruction_type: SBC,
+            opcode: 0xFD,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedX,
+            operation: Self::sbc,
+        });
+        instructions[0xFE] = Some(Instruction{
+            instruction_type: INC,
+            opcode: 0xFE,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedX,
+            operation: Self::inc,
         });
 
         InstructionSet {
