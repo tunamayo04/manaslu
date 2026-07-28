@@ -4,6 +4,7 @@ pub mod bitwise;
 pub mod branch;
 pub mod nop;
 pub mod shift;
+pub mod flags;
 
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
@@ -203,6 +204,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::asl,
         });
+        instructions[0x18] = Some(Instruction {
+            instruction_type: CLC,
+            opcode: 0x18,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::clc,
+        });
         instructions[0x19] = Some(Instruction {
             instruction_type: AND,
             opcode: 0x19,
@@ -282,6 +290,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::and,
         });
+        instructions[0x38] = Some(Instruction {
+            instruction_type: SEC,
+            opcode: 0x38,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::sec,
+        });
         instructions[0x39] = Some(Instruction {
             instruction_type: AND,
             opcode: 0x39,
@@ -340,6 +355,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::eor,
         });
+        instructions[0x58] = Some(Instruction {
+            instruction_type: CLI,
+            opcode: 0x58,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::cli,
+        });
         instructions[0x59] = Some(Instruction {
             instruction_type: EOR,
             opcode: 0x59,
@@ -375,6 +397,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::Immediate,
             operation: Self::adc,
+        });
+        instructions[0x78] = Some(Instruction {
+            instruction_type: SEI,
+            opcode: 0x78,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::sei,
         });
         instructions[0x6D] = Some(Instruction {
             instruction_type: ADC,
@@ -619,6 +648,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::ZeroPageIndexedY,
             operation: Self::ldx,
         });
+        instructions[0xB8] = Some(Instruction {
+            instruction_type: CLV,
+            opcode: 0xB8,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::clv,
+        });
         instructions[0xB9] = Some(Instruction {
             instruction_type: LDA,
             opcode: 0xB9,
@@ -676,6 +712,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::dec,
+        });
+        instructions[0xD8] = Some(Instruction {
+            instruction_type: CLD,
+            opcode: 0xD8,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::cld,
         });
         instructions[0xDE] = Some(Instruction {
             instruction_type: DEC,
@@ -762,6 +805,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::inc,
+        });
+        instructions[0xF8] = Some(Instruction {
+            instruction_type: SED,
+            opcode: 0xF8,
+            operand: None,
+            addressing_mode: AddressingMode::Implicit,
+            operation: Self::sed,
         });
         instructions[0xF9] = Some(Instruction {
             instruction_type: SBC,
