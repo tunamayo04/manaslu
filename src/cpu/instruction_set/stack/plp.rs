@@ -1,6 +1,6 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn plp(
@@ -23,7 +23,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::{AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, PLP};
+    use crate::cpu::instruction_set::InstructionType::{
+        AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, PLP,
+    };
     use crate::utils::testing::TestBus;
 
     #[test]

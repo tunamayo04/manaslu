@@ -1,5 +1,5 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
 use crate::cpu::registers::{Flag, Registers};
 use crate::utils::math::is_negative;
 
@@ -7,7 +7,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn tsx(
         instruction: &Instruction<T>,
         registers: &mut Registers,
-        bus: &mut T,
+        _bus: &mut T,
     ) -> Result<u8, String> {
         registers.x = registers.stack_pointer;
 
@@ -24,7 +24,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::{AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, TSX};
+    use crate::cpu::instruction_set::InstructionType::{
+        AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, TSX,
+    };
     use crate::utils::testing::TestBus;
 
     #[test]
@@ -52,5 +54,4 @@ mod tests {
         assert_eq!(registers.get_flag(Flag::Negative), true);
         assert_eq!(registers.get_flag(Flag::Zero), false);
     }
-
 }

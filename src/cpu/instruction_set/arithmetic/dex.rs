@@ -22,8 +22,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::cpu::instruction_set::AddressingMode;
     use super::*;
+    use crate::cpu::instruction_set::AddressingMode;
     use crate::cpu::instruction_set::InstructionType::{DEX, INC, INX};
     use crate::utils::testing::TestBus;
 

@@ -112,6 +112,6 @@ mod tests {
         assert_eq!(result, Ok(2));
         assert_eq!(registers.accumulator, 0b00000000);
         assert_eq!(registers.get_flag(Flag::Zero), true);
-        assert_eq!(registers.get_flag(Flag::Negative), false);   
+        assert_eq!(registers.get_flag(Flag::Negative), false);
     }
 }

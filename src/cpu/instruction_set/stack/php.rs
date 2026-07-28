@@ -1,6 +1,6 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn php(
@@ -8,7 +8,10 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        bus.write_byte(0x0100 + registers.stack_pointer as u16, registers.flags | 0b0011_000);
+        bus.write_byte(
+            0x0100 + registers.stack_pointer as u16,
+            registers.flags | 0b0011_000,
+        );
         registers.decrement_stack_pointer(1);
 
         match instruction.addressing_mode {
@@ -45,7 +48,7 @@ mod tests {
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
         // Assert
-        assert_eq!(result, Ok(2));
+        assert_eq!(result, Ok(3));
         assert_eq!(registers.stack_pointer, 0xFE);
         assert_eq!(test_bus.read_byte(0x0100 + 0xFFu16), 0b0011_000);
     }
@@ -74,6 +77,5 @@ mod tests {
         assert_eq!(result, Ok(3));
         assert_eq!(registers.stack_pointer, 0xFE);
         assert_eq!(test_bus.read_byte(0x0100 + 0xFFu16), 0xFF);
-
     }
 }

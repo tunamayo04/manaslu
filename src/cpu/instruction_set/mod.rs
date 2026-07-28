@@ -2,17 +2,16 @@ pub mod access;
 pub mod arithmetic;
 pub mod bitwise;
 pub mod branch;
+pub mod flags;
 pub mod nop;
 pub mod shift;
-pub mod flags;
 pub mod stack;
 
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
 use crate::cpu::registers::Registers;
 
-type Operation<T> =
-    fn(&Instruction<T>, &mut Registers, &mut T) -> Result<u8, String>;
+type Operation<T> = fn(&Instruction<T>, &mut Registers, &mut T) -> Result<u8, String>;
 
 #[derive(Copy, Clone)]
 pub enum AddressingMode {
@@ -882,6 +881,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     }
 
     pub fn get_instruction(&self, opcode: u8) -> Option<Instruction<T>> {
-        self.instructions[opcode as usize].as_ref().map(|instruction| *instruction)
+        self.instructions[opcode as usize]
+            .as_ref()
+            .map(|instruction| *instruction)
     }
 }

@@ -1,13 +1,12 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
 use crate::cpu::registers::{Flag, Registers};
-use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn sec(
         instruction: &Instruction<T>,
         registers: &mut Registers,
-        bus: &mut T,
+        _bus: &mut T,
     ) -> Result<u8, String> {
         registers.set_flag(Flag::Carry, true);
 

@@ -46,15 +46,15 @@ impl Registers {
     pub fn increment_program_counter(&mut self, amount: u16) {
         self.program_counter = self.program_counter.wrapping_add(amount);
     }
-    
+
     pub fn decrement_program_counter(&mut self, amount: u16) {
         self.program_counter = self.program_counter.wrapping_sub(amount);
     }
-    
+
     pub fn increment_stack_pointer(&mut self, amount: u8) {
         self.stack_pointer = self.stack_pointer.wrapping_add(amount);
     }
-    
+
     pub fn decrement_stack_pointer(&mut self, amount: u8) {
         self.stack_pointer = self.stack_pointer.wrapping_sub(amount);
     }

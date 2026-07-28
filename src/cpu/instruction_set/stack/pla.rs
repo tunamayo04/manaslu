@@ -1,6 +1,7 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
 use crate::cpu::registers::{Flag, Registers};
+use crate::utils::math::is_negative;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn pla(
@@ -10,6 +11,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     ) -> Result<u8, String> {
         registers.increment_stack_pointer(1);
         registers.accumulator = bus.read_byte(0x0100 + registers.stack_pointer as u16);
+
+        registers.set_flag(Flag::Zero, registers.accumulator == 0);
+        registers.set_flag(Flag::Negative, is_negative(registers.accumulator));
 
         match instruction.addressing_mode {
             AddressingMode::Implicit => Ok(4),
@@ -47,5 +51,7 @@ mod tests {
         assert_eq!(result, Ok(4));
         assert_eq!(registers.stack_pointer, 0x01);
         assert_eq!(registers.accumulator, 0x55);
+        assert_eq!(registers.get_flag(Flag::Zero), false);
+        assert_eq!(registers.get_flag(Flag::Negative), false);
     }
 }

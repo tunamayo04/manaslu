@@ -1,6 +1,6 @@
 pub mod pha;
-mod pla;
 mod php;
+mod pla;
 mod plp;
 mod tsx;
 mod txs;

@@ -1,6 +1,6 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn pha(
@@ -8,7 +8,10 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        bus.write_byte(0x0100 + registers.stack_pointer as u16, registers.accumulator);
+        bus.write_byte(
+            0x0100 + registers.stack_pointer as u16,
+            registers.accumulator,
+        );
         registers.decrement_stack_pointer(1);
 
         match instruction.addressing_mode {
