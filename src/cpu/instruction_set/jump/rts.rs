@@ -1,7 +1,6 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
-use crate::utils::math::is_negative;
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn rts(
@@ -14,7 +13,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers.increment_stack_pointer(1);
         let program_counter_high = bus.read_byte(registers.stack_pointer as u16 + 0x0100);
 
-        registers.program_counter = u16::from_le_bytes([program_counter_low, program_counter_high]) + 1;
+        registers.program_counter =
+            u16::from_le_bytes([program_counter_low, program_counter_high]) + 1;
 
         match instruction.addressing_mode {
             AddressingMode::Implicit => Ok(6),
@@ -52,7 +52,7 @@ mod tests {
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        // Assert 
+        // Assert
         assert_eq!(result, Ok(6));
         assert_eq!(registers.program_counter, 0xBEF0);
         assert_eq!(registers.stack_pointer, 0xFF);

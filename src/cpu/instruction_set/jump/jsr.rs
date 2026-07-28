@@ -1,7 +1,6 @@
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
-use crate::utils::math::is_negative;
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn jsr(
@@ -9,14 +8,19 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        let operand = instruction.operand.ok_or(String::from("No operand found"))?;
+        let operand = instruction
+            .operand
+            .ok_or(String::from("No operand found"))?;
         let operand_value = match operand {
             Operand::Address(address) => address,
             _ => Err("Invalid operand")?,
         };
 
         let [program_counter_low, program_counter_high] = registers.program_counter.to_le_bytes();
-        bus.write_byte(registers.stack_pointer as u16 + 0x0100, program_counter_high);
+        bus.write_byte(
+            registers.stack_pointer as u16 + 0x0100,
+            program_counter_high,
+        );
         registers.decrement_stack_pointer(1);
         bus.write_byte(registers.stack_pointer as u16 + 0x0100, program_counter_low);
         registers.decrement_stack_pointer(1);
@@ -56,7 +60,7 @@ mod tests {
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        // Assert 
+        // Assert
         assert_eq!(result, Ok(6));
         assert_eq!(registers.program_counter, 0xBEEF);
         assert_eq!(registers.stack_pointer, 0xFD);

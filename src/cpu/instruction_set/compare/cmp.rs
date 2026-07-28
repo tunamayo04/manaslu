@@ -9,7 +9,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        let operand = instruction.operand.ok_or(String::from("No operand found"))?;
+        let operand = instruction
+            .operand
+            .ok_or(String::from("No operand found"))?;
         let operand_value = match operand {
             Operand::Value(value) => value,
             Operand::Address(address) => bus.read_byte(address),
@@ -61,7 +63,7 @@ mod tests {
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        // Assert 
+        // Assert
         assert_eq!(result, Ok(2));
         assert_eq!(registers.get_flag(Flag::Carry), true);
         assert_eq!(registers.get_flag(Flag::Zero), false);

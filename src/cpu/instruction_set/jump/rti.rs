@@ -1,7 +1,6 @@
 use crate::bus::MemoryIndexer;
-use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
-use crate::cpu::registers::{Flag, Registers};
-use crate::utils::math::is_negative;
+use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
+use crate::cpu::registers::Registers;
 
 impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn rti(
@@ -29,8 +28,10 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::{AND, BIT, CLC, CMP, JMP, JSR, ORA, RTI, RTS};
     use crate::cpu::IRQ_VECTOR;
+    use crate::cpu::instruction_set::InstructionType::{
+        AND, BIT, CLC, CMP, JMP, JSR, ORA, RTI, RTS,
+    };
     use crate::utils::testing::TestBus;
 
     #[test]
@@ -54,15 +55,13 @@ mod tests {
         test_bus.write_byte(registers.stack_pointer as u16 + 0x102, 0xEF);
         test_bus.write_byte(registers.stack_pointer as u16 + 0x103, 0xBE);
 
-
         // Act
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        // Assert 
+        // Assert
         assert_eq!(result, Ok(6));
         assert_eq!(registers.program_counter, 0xBEEF);
         assert_eq!(registers.stack_pointer, 0xFF);
         assert_eq!(registers.flags, 0xFF);
-
     }
 }

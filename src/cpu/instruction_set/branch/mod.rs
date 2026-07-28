@@ -1,8 +1,8 @@
 mod bcc;
 mod bcs;
 mod beq;
-mod bne;
 mod bmi;
+mod bne;
 mod bpl;
-mod bvs;
 mod bvc;
+mod bvs;

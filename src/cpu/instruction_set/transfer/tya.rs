@@ -7,7 +7,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     pub(crate) fn tya(
         instruction: &Instruction<T>,
         registers: &mut Registers,
-        bus: &mut T,
+        _bus: &mut T,
     ) -> Result<u8, String> {
         registers.accumulator = registers.y;
 
@@ -24,7 +24,9 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cpu::instruction_set::InstructionType::{AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, TAX, TXA, TYA};
+    use crate::cpu::instruction_set::InstructionType::{
+        AND, BIT, CLC, CLD, CLV, ORA, PHA, PHP, TAX, TXA, TYA,
+    };
     use crate::utils::testing::TestBus;
 
     #[test]
@@ -80,7 +82,6 @@ mod tests {
         assert_eq!(registers.get_flag(Flag::Zero), false);
         assert_eq!(registers.get_flag(Flag::Negative), true);
     }
-
 
     #[test]
     fn tax_instruction_zero() {
