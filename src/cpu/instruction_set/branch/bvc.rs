@@ -2,7 +2,7 @@ use crate::cpu::instruction_set::{Instruction, InstructionSet, Operand};
 use crate::cpu::registers::{Flag, Registers};
 
 impl<T> InstructionSet<T> {
-    pub(crate) fn bcc(
+    pub(crate) fn bvc(
         instruction: &Instruction<T>,
         registers: &mut Registers,
         _bus: &mut T,
@@ -13,12 +13,12 @@ impl<T> InstructionSet<T> {
             Operand::Value(_) => return Err(String::from("Invalid operand")),
         };
 
-        let carry_flag = registers.get_flag(Flag::Carry);
-        if !carry_flag {
+        let overflow_flag = registers.get_flag(Flag::Overflow);
+        if !overflow_flag {
             registers.program_counter = branch_address;
         }
 
-        Ok(2 + if !carry_flag { 1 } else { 0 })
+        Ok(2 + if !overflow_flag { 1 } else { 0 })
     }
 }
 
@@ -26,7 +26,7 @@ impl<T> InstructionSet<T> {
 mod tests {
     use super::*;
     use crate::cpu::instruction_set::AddressingMode;
-    use crate::cpu::instruction_set::InstructionType::BCC;
+    use crate::cpu::instruction_set::InstructionType::{BCC, BNE, BVC};
     use crate::utils::testing::TestBus;
 
     #[test]
@@ -35,15 +35,15 @@ mod tests {
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: BCC,
-            opcode: 0x90,
+            instruction_type: BVC,
+            opcode: 0x50,
             operand: Some(Operand::Address(0xBEEF)),
             addressing_mode: AddressingMode::Relative,
-            operation: InstructionSet::bcc,
+            operation: InstructionSet::bvc,
         };
 
         registers.program_counter = 0xDEAD;
-        registers.set_flag(Flag::Carry, true);
+        registers.set_flag(Flag::Overflow, true);
 
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
@@ -57,15 +57,15 @@ mod tests {
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: BCC,
-            opcode: 0x90,
+            instruction_type: BVC,
+            opcode: 0x50,
             operand: Some(Operand::Address(0xBEEF)),
             addressing_mode: AddressingMode::Relative,
-            operation: InstructionSet::bcc,
+            operation: InstructionSet::bvc,
         };
 
         registers.program_counter = 0xDEAD;
-        registers.set_flag(Flag::Carry, false);
+        registers.set_flag(Flag::Overflow, false);
 
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 

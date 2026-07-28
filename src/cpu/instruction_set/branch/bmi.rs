@@ -2,7 +2,7 @@ use crate::cpu::instruction_set::{Instruction, InstructionSet, Operand};
 use crate::cpu::registers::{Flag, Registers};
 
 impl<T> InstructionSet<T> {
-    pub(crate) fn bcc(
+    pub(crate) fn bmi(
         instruction: &Instruction<T>,
         registers: &mut Registers,
         _bus: &mut T,
@@ -13,12 +13,12 @@ impl<T> InstructionSet<T> {
             Operand::Value(_) => return Err(String::from("Invalid operand")),
         };
 
-        let carry_flag = registers.get_flag(Flag::Carry);
-        if !carry_flag {
+        let negative_flag = registers.get_flag(Flag::Negative);
+        if negative_flag {
             registers.program_counter = branch_address;
         }
 
-        Ok(2 + if !carry_flag { 1 } else { 0 })
+        Ok(2 + if negative_flag { 1 } else { 0 })
     }
 }
 
@@ -26,7 +26,7 @@ impl<T> InstructionSet<T> {
 mod tests {
     use super::*;
     use crate::cpu::instruction_set::AddressingMode;
-    use crate::cpu::instruction_set::InstructionType::BCC;
+    use crate::cpu::instruction_set::InstructionType::{BCC, BCS, BEQ, BMI, BPL};
     use crate::utils::testing::TestBus;
 
     #[test]
@@ -35,20 +35,20 @@ mod tests {
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: BCC,
-            opcode: 0x90,
+            instruction_type: BMI,
+            opcode: 0x30,
             operand: Some(Operand::Address(0xBEEF)),
             addressing_mode: AddressingMode::Relative,
-            operation: InstructionSet::bcc,
+            operation: InstructionSet::bmi,
         };
 
         registers.program_counter = 0xDEAD;
-        registers.set_flag(Flag::Carry, true);
+        registers.set_flag(Flag::Negative, true);
 
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        assert_eq!(result, Ok(2));
-        assert_eq!(registers.program_counter, 0xDEAD);
+        assert_eq!(result, Ok(3));
+        assert_eq!(registers.program_counter, 0xBEEF);
     }
 
     #[test]
@@ -57,19 +57,19 @@ mod tests {
         let mut test_bus = TestBus::new();
 
         let instruction = Instruction {
-            instruction_type: BCC,
-            opcode: 0x90,
+            instruction_type: BMI,
+            opcode: 0x30,
             operand: Some(Operand::Address(0xBEEF)),
             addressing_mode: AddressingMode::Relative,
-            operation: InstructionSet::bcc,
+            operation: InstructionSet::bmi,
         };
 
         registers.program_counter = 0xDEAD;
-        registers.set_flag(Flag::Carry, false);
+        registers.set_flag(Flag::Negative, false);
 
         let result = (instruction.operation)(&instruction, &mut registers, &mut test_bus);
 
-        assert_eq!(result, Ok(3));
-        assert_eq!(registers.program_counter, 0xBEEF);
+        assert_eq!(result, Ok(2));
+        assert_eq!(registers.program_counter, 0xDEAD);
     }
 }
