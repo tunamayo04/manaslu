@@ -132,6 +132,20 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     pub fn new() -> InstructionSet<T> {
         let mut instructions = std::array::from_fn(|_| None);
 
+        instructions[0x01] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x01,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedX,
+            operation: Self::and,
+        });
+        instructions[0x05] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x05,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::and,
+        });
         instructions[0x06] = Some(Instruction {
             instruction_type: ASL,
             opcode: 0x06,
@@ -139,12 +153,26 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::ZeroPage,
             operation: Self::asl,
         });
+        instructions[0x09] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x09,
+            operand: None,
+            addressing_mode: AddressingMode::Immediate,
+            operation: Self::and,
+        });
         instructions[0x0A] = Some(Instruction {
             instruction_type: ASL,
             opcode: 0x0A,
             operand: None,
             addressing_mode: AddressingMode::Accumulator,
             operation: Self::asl,
+        });
+        instructions[0x0D] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x0D,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::and,
         });
         instructions[0x0E] = Some(Instruction {
             instruction_type: ASL,
@@ -154,12 +182,40 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operation: Self::asl,
         });
 
+        instructions[0x11] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x11,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedY,
+            operation: Self::and,
+        });
+        instructions[0x15] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x15,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPageIndexedX,
+            operation: Self::and,
+        });
         instructions[0x16] = Some(Instruction {
             instruction_type: ASL,
             opcode: 0x16,
             operand: None,
             addressing_mode: AddressingMode::ZeroPageIndexedX,
             operation: Self::asl,
+        });
+        instructions[0x19] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x19,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedY,
+            operation: Self::and,
+        });
+        instructions[0x1D] = Some(Instruction {
+            instruction_type: AND,
+            opcode: 0x1D,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedX,
+            operation: Self::and,
         });
         instructions[0x1E] = Some(Instruction {
             instruction_type: ASL,
@@ -176,6 +232,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             addressing_mode: AddressingMode::IndirectIndexedX,
             operation: Self::and,
         });
+        instructions[0x24] = Some(Instruction {
+            instruction_type: BIT,
+            opcode: 0x24,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::bit,
+        });
         instructions[0x25] = Some(Instruction {
             instruction_type: AND,
             opcode: 0x25,
@@ -189,6 +252,13 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::Immediate,
             operation: Self::and,
+        });
+        instructions[0x2C] = Some(Instruction {
+            instruction_type: BIT,
+            opcode: 0x2C,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::bit,
         });
         instructions[0x2D] = Some(Instruction {
             instruction_type: AND,
@@ -225,6 +295,64 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             operand: None,
             addressing_mode: AddressingMode::AbsoluteIndexedX,
             operation: Self::and,
+        });
+
+        instructions[0x41] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x41,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedX,
+            operation: Self::eor,
+        });
+        instructions[0x45] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x45,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPage,
+            operation: Self::eor,
+        });
+        instructions[0x49] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x49,
+            operand: None,
+            addressing_mode: AddressingMode::Immediate,
+            operation: Self::eor,
+        });
+        instructions[0x4D] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x4D,
+            operand: None,
+            addressing_mode: AddressingMode::Absolute,
+            operation: Self::eor,
+        });
+
+        instructions[0x51] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x51,
+            operand: None,
+            addressing_mode: AddressingMode::IndirectIndexedY,
+            operation: Self::eor,
+        });
+        instructions[0x55] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x55,
+            operand: None,
+            addressing_mode: AddressingMode::ZeroPageIndexedX,
+            operation: Self::eor,
+        });
+        instructions[0x59] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x59,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedY,
+            operation: Self::eor,
+        });
+        instructions[0x5D] = Some(Instruction {
+            instruction_type: EOR,
+            opcode: 0x5D,
+            operand: None,
+            addressing_mode: AddressingMode::AbsoluteIndexedX,
+            operation: Self::eor,
         });
 
         instructions[0x61] = Some(Instruction {
