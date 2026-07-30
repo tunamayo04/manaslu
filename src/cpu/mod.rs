@@ -1,3 +1,4 @@
+use log::info;
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
@@ -28,16 +29,57 @@ impl<T: MemoryIndexer> CPU<T> {
     }
 
     pub fn reset(&mut self, bus: &T) {
-        self.registers.reset();
-
         let reset_address = bus.read_word(RST_VECTOR);
-        self.registers.program_counter = reset_address;
+        self.registers.reset(reset_address);
     }
 
-    fn step(&mut self, bus: &mut T) -> Result<(), String> {
+    pub fn reset_at_address(&mut self, address: u16) {
+        self.registers.reset(address);
+    }
+
+    pub fn step(&mut self, bus: &mut T) -> Result<(), String> {
+        let starting_program_counter = self.registers.program_counter;
+
         let next_instruction = self.fetch_next_instruction(bus)?;
 
-        (next_instruction.operation)(&next_instruction, &mut self.registers, bus);
+        let (operand1, operand2) = match next_instruction.operand {
+            Some(Operand::Value(value)) => (
+                format!("{:02X}", value),
+                String::from("  "),
+            ),
+            Some(Operand::Address(addr)) => (
+                format!("{:02X}", (addr & 0x00FF) as u8),
+                format!("{:02X}", (addr >> 8) as u8),
+            ),
+            None => (
+                String::from("  "),
+                String::from("  "),
+            ),
+        };
+        // info!("A:{:02X} X:{:02X} Y:{:02X} S:{:02X} P:{:02X}    ${:04X}: {:02X} {} {} {:?}",
+        //     self.registers.accumulator,
+        //     self.registers.x,
+        //     self.registers.y,
+        //     self.registers.stack_pointer,
+        //     self.registers.flags,
+        //     starting_program_counter,
+        //     next_instruction.opcode,
+        //     operand1, operand2,
+        //     next_instruction.instruction_type,
+        // );
+        info!("{:04X} {:02X} {} {} {:?}          A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X}",
+            starting_program_counter,
+            next_instruction.opcode,
+            operand1, operand2,
+            next_instruction.instruction_type,
+            self.registers.accumulator,
+            self.registers.x,
+            self.registers.y,
+            self.registers.flags,
+            self.registers.stack_pointer,
+        );
+
+        (next_instruction.operation)(&next_instruction, &mut self.registers, bus)?;
 
         Ok(())
     }
@@ -45,7 +87,7 @@ impl<T: MemoryIndexer> CPU<T> {
     fn fetch_next_instruction(&mut self, bus: &mut T) -> Result<Instruction<T>, String> {
         let opcode = bus.read_byte(self.registers.program_counter);
         let Some(mut instruction) = self.instruction_set.get_instruction(opcode) else {
-            return Err(String::from("Unknown opcode"));
+            return Err(format!("Invalid opcode: {:02X}", opcode));
         };
 
         self.registers.increment_program_counter(1);

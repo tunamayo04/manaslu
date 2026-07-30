@@ -34,13 +34,13 @@ impl Registers {
         }
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, program_counter: u16) {
         self.accumulator = 0;
-        self.stack_pointer = 0;
-        self.program_counter = 0;
-        self.flags = 0b0010_0000;
         self.x = 0;
         self.y = 0;
+        self.program_counter = program_counter;
+        self.stack_pointer = 0xFD;
+        self.flags = 0b0010_0000;
     }
 
     pub fn increment_program_counter(&mut self, amount: u16) {
