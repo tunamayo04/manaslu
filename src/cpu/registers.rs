@@ -41,6 +41,7 @@ impl Registers {
         self.program_counter = program_counter;
         self.stack_pointer = 0xFD;
         self.flags = 0b0010_0000;
+        self.set_flag(Flag::InterruptDisable, true);
     }
 
     pub fn increment_program_counter(&mut self, amount: u16) {

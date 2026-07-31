@@ -16,7 +16,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         let program_counter_high = bus.read_byte(registers.stack_pointer as u16 + 0x0100);
 
         registers.program_counter = u16::from_le_bytes([program_counter_low, program_counter_high]);
-        registers.flags = flags;
+        registers.flags = (flags & !0b0001_0000) | 0b0010_0000;
 
         match instruction.addressing_mode {
             AddressingMode::Implicit => Ok(6),

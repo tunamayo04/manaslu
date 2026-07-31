@@ -17,8 +17,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         let result = registers.accumulator & operand;
 
         registers.set_flag(Flag::Zero, result == 0);
-        registers.set_flag(Flag::Negative, is_negative(result));
-        registers.set_flag(Flag::Overflow, result & 0b0100_0000 != 0);
+        registers.set_flag(Flag::Negative, is_negative(operand));
+        registers.set_flag(Flag::Overflow, operand & 0b0100_0000 != 0);
 
         match instruction.addressing_mode {
             AddressingMode::ZeroPage => Ok(3),

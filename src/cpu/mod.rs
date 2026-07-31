@@ -87,7 +87,7 @@ impl<T: MemoryIndexer> CPU<T> {
     fn fetch_next_instruction(&mut self, bus: &mut T) -> Result<Instruction<T>, String> {
         let opcode = bus.read_byte(self.registers.program_counter);
         let Some(mut instruction) = self.instruction_set.get_instruction(opcode) else {
-            return Err(format!("Invalid opcode: {:02X}", opcode));
+            return Err(format!("Invalid opcode: {:02X} at PC: {:04X}", opcode, self.registers.program_counter));
         };
 
         self.registers.increment_program_counter(1);

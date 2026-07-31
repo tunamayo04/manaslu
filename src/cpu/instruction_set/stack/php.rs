@@ -10,7 +10,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
     ) -> Result<u8, String> {
         bus.write_byte(
             0x0100 + registers.stack_pointer as u16,
-            registers.flags | 0b0011_000,
+            registers.flags | 0b0011_0000,
         );
         registers.decrement_stack_pointer(1);
 

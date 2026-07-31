@@ -11,7 +11,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
         registers.increment_stack_pointer(1);
         let value = bus.read_byte(0x0100 + registers.stack_pointer as u16);
 
-        registers.flags = value & 0b1100_1111;
+        registers.flags = (value & 0b1110_1111) | 0b0010_0000;
 
         match instruction.addressing_mode {
             AddressingMode::Implicit => Ok(4),
