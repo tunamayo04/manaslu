@@ -1027,7 +1027,7 @@ CF5E  B8        CLV                             A:80 X:55 Y:69 P:67 SP:FB PPU: 2
 CF5F  18        CLC                             A:80 X:55 Y:69 P:27 SP:FB PPU: 21, 30 CYC:2397
 CF60  A9 55     LDA #$55                        A:80 X:55 Y:69 P:26 SP:FB PPU: 21, 36 CYC:2399
 CF62  6A        ROR A                           A:55 X:55 Y:69 P:24 SP:FB PPU: 21, 42 CYC:2401
-CF63  90 0D     BCC $CF72                       A:2A X:55 Y:69 P:25 SP:FB PPU: 21, 48 CYC:2403
+CF63  90 0D     BCC $CF72                       A:2A X:55 Y:69 P:25 SP:FB PPU: 21, 48 CYC:2403 0b0010_0101
 CF65  F0 0B     BEQ $CF72                       A:2A X:55 Y:69 P:25 SP:FB PPU: 21, 54 CYC:2405
 CF67  30 09     BMI $CF72                       A:2A X:55 Y:69 P:25 SP:FB PPU: 21, 60 CYC:2407
 CF69  70 07     BVS $CF72                       A:2A X:55 Y:69 P:25 SP:FB PPU: 21, 66 CYC:2409
@@ -1035,9 +1035,9 @@ CF6B  C9 2A     CMP #$2A                        A:2A X:55 Y:69 P:25 SP:FB PPU: 2
 CF6D  D0 03     BNE $CF72                       A:2A X:55 Y:69 P:27 SP:FB PPU: 21, 78 CYC:2413
 CF6F  4C 76 CF  JMP $CF76                       A:2A X:55 Y:69 P:27 SP:FB PPU: 21, 84 CYC:2415
 CF76  EA        NOP                             A:2A X:55 Y:69 P:27 SP:FB PPU: 21, 93 CYC:2418
-CF77  24 01     BIT $01 = FF                    A:2A X:55 Y:69 P:27 SP:FB PPU: 21, 99 CYC:2420
-CF79  38        SEC                             A:2A X:55 Y:69 P:E5 SP:FB PPU: 21,108 CYC:2423
-CF7A  A9 80     LDA #$80                        A:2A X:55 Y:69 P:E5 SP:FB PPU: 21,114 CYC:2425
+CF77  24 01     BIT $01 = FF                    A:2A X:55 Y:69 P:27 SP:FB PPU: 21, 99 CYC:2420 0b0101_0101
+CF79  38        SEC                             A:2A X:55 Y:69 P:E5 SP:FB PPU: 21,108 CYC:2423 0b0010_1010
+CF7A  A9 80     LDA #$80                        A:2A X:55 Y:69 P:E5 SP:FB PPU: 21,114 CYC:2425 0b1010_1010
 CF7C  2A        ROL A                           A:80 X:55 Y:69 P:E5 SP:FB PPU: 21,120 CYC:2427
 CF7D  90 1E     BCC $CF9D                       A:01 X:55 Y:69 P:65 SP:FB PPU: 21,126 CYC:2429
 CF7F  F0 1C     BEQ $CF9D                       A:01 X:55 Y:69 P:65 SP:FB PPU: 21,132 CYC:2431

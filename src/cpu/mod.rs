@@ -67,7 +67,7 @@ impl<T: MemoryIndexer> CPU<T> {
         //     operand1, operand2,
         //     next_instruction.instruction_type,
         // );
-        info!("{:04X} {:02X} {} {} {:?}          A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X}",
+        info!("{:04X} {:02X} {} {} {:?}          A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} T:{:02X}",
             starting_program_counter,
             next_instruction.opcode,
             operand1, operand2,
@@ -77,6 +77,7 @@ impl<T: MemoryIndexer> CPU<T> {
             self.registers.y,
             self.registers.flags,
             self.registers.stack_pointer,
+            bus.read_byte(0x02)
         );
 
         (next_instruction.operation)(&next_instruction, &mut self.registers, bus)?;

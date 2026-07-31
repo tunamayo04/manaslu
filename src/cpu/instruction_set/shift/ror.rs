@@ -15,7 +15,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             Operand::Value(value) => value,
         };
 
-        let result = (operand_value >> 1) | ((operand_value & 0b0000_0001) << 7);
+        let carry = registers.get_flag(Flag::Carry);
+        let result = (operand_value >> 1) | ((carry as u8) << 7);
 
         registers.set_flag(Flag::Carry, (operand_value & 0b0000_0001) != 0);
         registers.set_flag(Flag::Zero, result == 0);
