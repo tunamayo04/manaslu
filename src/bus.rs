@@ -1,4 +1,3 @@
-use log::info;
 use crate::cartridge::Cartridge;
 
 pub trait MemoryIndexer {
@@ -48,9 +47,7 @@ impl MemoryIndexer for CpuBus {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
             // 2 KB internal RAM mirrored every 0x800 bytes
-            0x0000..=0x1FFF => {
-                self.ram[(address & 0x07FF) as usize]
-            }
+            0x0000..=0x1FFF => self.ram[(address & 0x07FF) as usize],
 
             // PPU registers
             // 8-byte region mirrored every 8 bytes
@@ -71,24 +68,18 @@ impl MemoryIndexer for CpuBus {
             }
 
             // APU + I/O registers
-            0x4000..=0x4017 => {
-                match address {
-                    0x4014 => todo!("OAM DMA"),
-                    0x4016 => todo!("Controller 1"),
-                    0x4017 => todo!("Controller 2 / APU"),
-                    _ => todo!("APU register"),
-                }
-            }
+            0x4000..=0x4017 => match address {
+                0x4014 => todo!("OAM DMA"),
+                0x4016 => todo!("Controller 1"),
+                0x4017 => todo!("Controller 2 / APU"),
+                _ => todo!("APU register"),
+            },
 
             // Normally disabled/test mode
-            0x4018..=0x401F => {
-                0
-            }
+            0x4018..=0x401F => 0,
 
             // Cartridge space
-            0x4020..=0xFFFF => {
-                self.cartridge.read_byte(address)
-            }
+            0x4020..=0xFFFF => self.cartridge.read_byte(address),
         }
     }
 
@@ -117,14 +108,12 @@ impl MemoryIndexer for CpuBus {
             }
 
             // APU + I/O
-            0x4000..=0x4017 => {
-                match address {
-                    0x4014 => todo!("OAM DMA"),
-                    0x4016 => todo!("Controller strobe"),
-                    0x4017 => todo!("APU frame counter"),
-                    _ => todo!("APU register"),
-                }
-            }
+            0x4000..=0x4017 => match address {
+                0x4014 => todo!("OAM DMA"),
+                0x4016 => todo!("Controller strobe"),
+                0x4017 => todo!("APU frame counter"),
+                _ => todo!("APU register"),
+            },
 
             0x4018..=0x401F => {}
 

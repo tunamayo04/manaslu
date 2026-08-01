@@ -17,7 +17,7 @@ impl Manaslu {
     }
 
     pub fn run(&mut self) {
-        self.cpu.reset(&mut self.cpu_bus);
+        self.cpu.reset(&self.cpu_bus);
         loop {
             self.cpu.step(&mut self.cpu_bus).expect("oopsie daisy");
         }

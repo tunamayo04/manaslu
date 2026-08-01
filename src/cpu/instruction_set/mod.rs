@@ -10,10 +10,10 @@ mod shift;
 mod stack;
 pub mod transfer;
 
-use std::fmt::Debug;
 use crate::bus::MemoryIndexer;
 use crate::cpu::instruction_set::InstructionType::*;
 use crate::cpu::registers::Registers;
+use std::fmt::Debug;
 
 type Operation<T> = fn(&Instruction<T>, &mut Registers, &mut T) -> Result<u8, String>;
 

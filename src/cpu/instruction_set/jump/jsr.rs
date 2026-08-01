@@ -16,7 +16,8 @@ impl<T: MemoryIndexer> InstructionSet<T> {
             _ => Err("Invalid operand")?,
         };
 
-        let [program_counter_low, program_counter_high] = (registers.program_counter - 1).to_le_bytes();
+        let [program_counter_low, program_counter_high] =
+            (registers.program_counter - 1).to_le_bytes();
         bus.write_byte(
             registers.stack_pointer as u16 + 0x0100,
             program_counter_high,

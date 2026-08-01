@@ -1,6 +1,6 @@
+use crate::bus::MemoryIndexer;
 use std::io::Read;
 use std::path::Path;
-use crate::bus::MemoryIndexer;
 
 #[derive(Debug, PartialEq)]
 enum NametableMirroring {
@@ -153,7 +153,7 @@ impl MemoryIndexer for Cartridge {
         }
     }
 
-    fn write_byte(&mut self, address: u16, value: u8) {
+    fn write_byte(&mut self, address: u16, _value: u8) {
         match address {
             0x8000..=0xFFFF => {
                 // NROM has no writable mapper registers.
