@@ -39,50 +39,182 @@ impl<T: MemoryIndexer> CPU<T> {
 
     pub fn step(&mut self, bus: &mut T) -> Result<(), String> {
         let starting_program_counter = self.registers.program_counter;
-
         let next_instruction = self.fetch_next_instruction(bus)?;
 
-        let (operand1, operand2) = match next_instruction.operand {
-            Some(Operand::Value(value)) => (
-                format!("{:02X}", value),
-                String::from("  "),
-            ),
-            Some(Operand::Address(addr)) => (
-                format!("{:02X}", (addr & 0x00FF) as u8),
-                format!("{:02X}", (addr >> 8) as u8),
-            ),
-            None => (
-                String::from("  "),
-                String::from("  "),
-            ),
-        };
-        // info!("A:{:02X} X:{:02X} Y:{:02X} S:{:02X} P:{:02X}    ${:04X}: {:02X} {} {} {:?}",
-        //     self.registers.accumulator,
-        //     self.registers.x,
-        //     self.registers.y,
-        //     self.registers.stack_pointer,
-        //     self.registers.flags,
-        //     starting_program_counter,
-        //     next_instruction.opcode,
-        //     operand1, operand2,
-        //     next_instruction.instruction_type,
-        // );
-        info!("{:04X} {:02X} {} {} {:?}          A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X} T:{:02X}",
+        let (opcode_bytes, operand_display) = self.format_instruction_display(
+            &next_instruction,
             starting_program_counter,
-            next_instruction.opcode,
-            operand1, operand2,
-            next_instruction.instruction_type,
+            bus,
+        );
+
+        info!("{:04X}  {:<9} {:<32} A:{:02X} X:{:02X} Y:{:02X} P:{:02X} SP:{:02X}",
+            starting_program_counter,
+            opcode_bytes,
+            operand_display,
             self.registers.accumulator,
             self.registers.x,
             self.registers.y,
             self.registers.flags,
             self.registers.stack_pointer,
-            bus.read_byte(0x02)
         );
 
         (next_instruction.operation)(&next_instruction, &mut self.registers, bus)?;
 
         Ok(())
+    }
+
+    fn format_instruction_display(
+        &self,
+        instruction: &Instruction<T>,
+        starting_pc: u16,
+        bus: &T,
+    ) -> (String, String) {
+        use std::fmt::Debug;
+
+        let mnemonic = format!("{:?}", instruction.instruction_type);
+
+        match instruction.addressing_mode {
+            AddressingMode::Implicit => (
+                format!("{:02X}", instruction.opcode),
+                mnemonic,
+            ),
+            AddressingMode::Accumulator => (
+                format!("{:02X}", instruction.opcode),
+                format!("{mnemonic} A"),
+            ),
+            AddressingMode::Immediate => {
+                if let Some(Operand::Value(val)) = instruction.operand {
+                    (
+                        format!("{:02X} {:02X}", instruction.opcode, val),
+                        format!("{} #${:02X}", mnemonic, val),
+                    )
+                } else {
+                    let val = bus.read_byte(starting_pc + 1);
+                    (
+                        format!("{:02X} {:02X}", instruction.opcode, val),
+                        format!("{} #${:02X}", mnemonic, val),
+                    )
+                }
+            },
+            AddressingMode::ZeroPage => {
+                let addr = bus.read_byte(starting_pc + 1) as u16;
+                let value = bus.read_byte(addr);
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, addr as u8),
+                    format!("{} ${:02X} = {:02X}", mnemonic, addr as u8, value),
+                )
+            },
+            AddressingMode::ZeroPageIndexedX => {
+                let base = bus.read_byte(starting_pc + 1);
+                let effective = base.wrapping_add(self.registers.x) as u16;
+                let value = bus.read_byte(effective);
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, base),
+                    format!("{} ${:02X},X @ {:02X} = {:02X}", mnemonic, base, effective as u8, value),
+                )
+            },
+            AddressingMode::ZeroPageIndexedY => {
+                let base = bus.read_byte(starting_pc + 1);
+                let effective = base.wrapping_add(self.registers.y) as u16;
+                let value = bus.read_byte(effective);
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, base),
+                    format!("{} ${:02X},Y @ {:02X} = {:02X}", mnemonic, base, effective as u8, value),
+                )
+            },
+            AddressingMode::Absolute => {
+                let low = bus.read_byte(starting_pc + 1);
+                let high = bus.read_byte(starting_pc + 2);
+                let addr = (high as u16) << 8 | (low as u16);
+                let bytes = format!("{:02X} {:02X} {:02X}", instruction.opcode, low, high);
+
+                // Control flow instructions (JSR, JMP) don't show the value, others do
+                let display = if mnemonic == "JSR" || mnemonic == "JMP" {
+                    format!("{} ${:04X}", mnemonic, addr)
+                } else {
+                    let value = bus.read_byte(addr);
+                    format!("{} ${:04X} = {:02X}", mnemonic, addr, value)
+                };
+
+                (bytes, display)
+            },
+            AddressingMode::AbsoluteIndexedX => {
+                let low = bus.read_byte(starting_pc + 1);
+                let high = bus.read_byte(starting_pc + 2);
+                let base_addr = (high as u16) << 8 | (low as u16);
+                let effective_addr = base_addr.wrapping_add(self.registers.x as u16);
+                let value = bus.read_byte(effective_addr);
+                let bytes = format!("{:02X} {:02X} {:02X}", instruction.opcode, low, high);
+
+                (
+                    bytes,
+                    format!("{} ${:04X},X @ {:04X} = {:02X}", mnemonic, base_addr, effective_addr, value),
+                )
+            },
+            AddressingMode::AbsoluteIndexedY => {
+                let low = bus.read_byte(starting_pc + 1);
+                let high = bus.read_byte(starting_pc + 2);
+                let base_addr = (high as u16) << 8 | (low as u16);
+                let effective_addr = base_addr.wrapping_add(self.registers.y as u16);
+                let value = bus.read_byte(effective_addr);
+                let bytes = format!("{:02X} {:02X} {:02X}", instruction.opcode, low, high);
+
+                (
+                    bytes,
+                    format!("{} ${:04X},Y @ {:04X} = {:02X}", mnemonic, base_addr, effective_addr, value),
+                )
+            },
+            AddressingMode::Indirect => {
+                let low = bus.read_byte(starting_pc + 1);
+                let high = bus.read_byte(starting_pc + 2);
+                let addr = (high as u16) << 8 | (low as u16);
+                let bytes = format!("{:02X} {:02X} {:02X}", instruction.opcode, low, high);
+
+                if let Some(Operand::Address(target)) = instruction.operand {
+                    (
+                        bytes,
+                        format!("{} (${:04X}) = {:04X}", mnemonic, addr, target),
+                    )
+                } else {
+                    (bytes, format!("{} (${:04X})", mnemonic, addr))
+                }
+            },
+            AddressingMode::IndirectIndexedX => {
+                let base = bus.read_byte(starting_pc + 1);
+                let lookup_addr = base.wrapping_add(self.registers.x);
+                let effective_addr = bus.read_word(lookup_addr as u16);
+                let value = bus.read_byte(effective_addr);
+
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, base),
+                    format!("{} (${:02X},X) @ {:02X} = {:04X} = {:02X}", mnemonic, base, lookup_addr, effective_addr, value),
+                )
+            },
+            AddressingMode::IndirectIndexedY => {
+                let base = bus.read_byte(starting_pc + 1);
+                let base_addr = bus.read_word(base as u16);
+                let effective_addr = base_addr.wrapping_add(self.registers.y as u16);
+                let value = bus.read_byte(effective_addr);
+
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, base),
+                    format!("{} (${:02X}),Y = {:04X} @ {:04X} = {:02X}", mnemonic, base, base_addr, effective_addr, value),
+                )
+            },
+            AddressingMode::Relative => {
+                let offset = bus.read_byte(starting_pc + 1) as i8;
+                let target = if let Some(Operand::Address(target)) = instruction.operand {
+                    target
+                } else {
+                    (starting_pc + 2).wrapping_add_signed(offset as i16)
+                };
+
+                (
+                    format!("{:02X} {:02X}", instruction.opcode, offset as u8),
+                    format!("{} ${:04X}", mnemonic, target),
+                )
+            },
+        }
     }
 
     fn fetch_next_instruction(&mut self, bus: &mut T) -> Result<Instruction<T>, String> {
@@ -142,11 +274,11 @@ impl<T: MemoryIndexer> CPU<T> {
                 Some(Operand::Address(effective_address))
             }
             AddressingMode::IndirectIndexedY => {
-                let effective_address = bus.read_word(self.registers.program_counter);
+                let address = bus.read_byte(self.registers.program_counter);
                 self.registers.increment_program_counter(1);
 
-                let lookup_address = effective_address.wrapping_add(self.registers.y as u16);
-                let effective_address = bus.read_word(lookup_address);
+                let base_address = bus.read_word(address as u16);
+                let effective_address = base_address.wrapping_add(self.registers.y as u16);
 
                 Some(Operand::Address(effective_address))
             }
@@ -184,7 +316,16 @@ impl<T: MemoryIndexer> CPU<T> {
                 let effective_address = bus.read_word(self.registers.program_counter);
                 self.registers.increment_program_counter(2);
 
-                let effective_target = bus.read_word(effective_address);
+                // 6502 JMP Indirect bug: if effective_address is $xxFF, the high byte
+                // is fetched from $xx00 instead of $(xx+1)00
+                let lo = bus.read_byte(effective_address) as u16;
+                let hi_addr = if (effective_address & 0x00FF) == 0x00FF {
+                    effective_address & 0xFF00
+                } else {
+                    effective_address + 1
+                };
+                let hi = bus.read_byte(hi_addr) as u16;
+                let effective_target = (hi << 8) | lo;
 
                 Some(Operand::Address(effective_target))
             }
@@ -197,6 +338,25 @@ mod tests {
     use super::*;
     use crate::utils::testing::TestBus;
     use std::assert_eq;
+
+    #[test]
+    fn jmp_indirect_bug_page_boundary() {
+        let mut cpu = CPU::new();
+        let mut test_bus = TestBus::new();
+        
+        test_bus.write_byte(0x0100, 0x6C);
+        test_bus.write_byte(0x0101, 0xFF);
+        test_bus.write_byte(0x0102, 0x02);
+        
+        test_bus.write_byte(0x02FF, 0x77);
+        test_bus.write_byte(0x0200, 0x88);
+        test_bus.write_byte(0x0300, 0x99);
+        
+        cpu.registers.program_counter = 0x0100;
+        cpu.step(&mut test_bus).unwrap();
+        
+        assert_eq!(cpu.registers.program_counter, 0x8877);
+    }
 
     #[test]
     fn reset_resets_registers() {
@@ -386,15 +546,15 @@ mod tests {
         let mut test_bus = TestBus::new();
 
         let first_address = 0x70;
-        let second_address = 0x3023;
+        let second_address = 0x3543;
         cpu.registers.program_counter = 0xBEEF;
-        cpu.registers.y = 0x05;
+        cpu.registers.y = 0x10;
         test_bus.write_word(0xBEEF, first_address);
-        test_bus.write_word(0x75, second_address);
-        test_bus.write_byte(second_address, 0xA5);
+        test_bus.write_word(first_address, second_address);
+        test_bus.write_byte(second_address + 0x10, 0xA5);
 
         let operand = cpu.fetch_operand(AddressingMode::IndirectIndexedY, &mut test_bus);
-        assert_eq!(operand, Some(Operand::Address(second_address)));
+        assert_eq!(operand, Some(Operand::Address(second_address + 0x10)));
     }
 
     #[test]

@@ -18,7 +18,7 @@ impl<T: MemoryIndexer> InstructionSet<T> {
 
         match instruction.addressing_mode {
             AddressingMode::ZeroPage => Ok(3),
-            AddressingMode::ZeroPageIndexedX => Ok(4),
+            AddressingMode::ZeroPageIndexedY => Ok(4),
             AddressingMode::Absolute => Ok(4),
             _ => Err(String::from("Invalid addressing mode")),
         }
