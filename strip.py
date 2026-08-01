@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
+import re
 import sys
 
+ppu_pattern = re.compile(r"\s+PPU:\s*\d+,\s*\d+\s+")
+
 for line in sys.stdin:
-    line = line.rstrip('\n')
-    # Find "SP:" and keep everything up to and including the 2 hex digits after it
-    sp_pos = line.find("SP:")
-    if sp_pos != -1:
-        end_pos = sp_pos + 5  # "SP:XX" is 5 characters total
-        print(line[:end_pos])
-    else:
-        print(line)
+    line = line.rstrip("\n")
+    line = ppu_pattern.sub(" ", line)
+    print(line)

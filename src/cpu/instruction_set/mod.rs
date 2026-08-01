@@ -103,6 +103,14 @@ pub enum InstructionType {
     // Other
     NOP,
 }
+impl InstructionType {
+    pub fn has_page_crossing_penalty(&self) -> bool {
+        matches!(
+            self,
+            ADC | AND | BCC | BCS | BEQ | BMI | BNE | BPL | BVC | BVS | CMP | EOR | LDA | LDX | LDY | ORA | SBC
+        )
+    }
+}
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Operand {

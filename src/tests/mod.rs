@@ -13,5 +13,5 @@ mod tests {
         manaslu.run_from_address(0xC000);
 
         Ok(())
-    }
+     }
 }
