@@ -1,4 +1,4 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cartridge::{Cartridge, NametableMirroring};
 
 pub struct PpuBus {
@@ -56,7 +56,7 @@ impl PpuBus {
     }
 }
 
-impl MemoryIndexer for PpuBus {
+impl SerialInterface for PpuBus {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
             // CHR-ROM / CHR-RAM

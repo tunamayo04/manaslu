@@ -1,8 +1,8 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub fn stx(
         instruction: &Instruction<T>,
         registers: &mut Registers,

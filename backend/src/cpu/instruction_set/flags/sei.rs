@@ -1,8 +1,8 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
 use crate::cpu::registers::{Flag, Registers};
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub(crate) fn sei(
         instruction: &Instruction<T>,
         registers: &mut Registers,

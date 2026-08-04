@@ -1,6 +1,7 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cartridge::Cartridge;
 use crate::ppu::Ppu;
+use crate::ppu::registers::PPURegisters;
 
 pub struct CpuBus {
     ram: [u8; 0x800],
@@ -24,7 +25,7 @@ impl CpuBus {
     }
 }
 
-impl MemoryIndexer for CpuBus {
+impl SerialInterface for CpuBus {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
             // 2 KB internal RAM mirrored every 0x800 bytes
@@ -35,21 +36,21 @@ impl MemoryIndexer for CpuBus {
                 let register = 0x2000 | (address & 0x0007);
 
                 match register {
-                    0x2000 => self.ppu.registers.ppu_ctrl,
-                    0x2001 => self.ppu.registers.ppu_mask,
-                    0x2002 => self.ppu.registers.ppu_status,
-                    0x2003 => self.ppu.registers.oam_addr,
-                    0x2004 => self.ppu.registers.oam_data,
-                    0x2005 => self.ppu.registers.ppu_scroll,
-                    0x2006 => self.ppu.registers.ppu_addr,
-                    0x2007 => self.ppu.registers.ppu_data,
+                    0x2000 => self.ppu.registers.get_register(PPURegisters::PpuCtrl),
+                    0x2001 => self.ppu.registers.get_register(PPURegisters::PpuMask),
+                    0x2002 => self.ppu.registers.get_register(PPURegisters::PpuStatus),
+                    0x2003 => self.ppu.registers.get_register(PPURegisters::OamAddr),
+                    0x2004 => self.ppu.registers.get_register(PPURegisters::OamData),
+                    0x2005 => self.ppu.registers.get_register(PPURegisters::PpuScroll),
+                    0x2006 => self.ppu.registers.get_register(PPURegisters::PpuAddr),
+                    0x2007 => self.ppu.registers.get_register(PPURegisters::PpuData),
                     _ => unreachable!(),
                 }
             }
 
             // APU + I/O registers
             0x4000..=0x4017 => match address {
-                0x4014 => self.ppu.registers.oam_dma,
+                0x4014 => self.ppu.registers.get_register(PPURegisters::OamDma),
                 0x4016 => todo!("Controller 1"),
                 0x4017 => todo!("Controller 2 / APU"),
                 _ => todo!("APU register"),
@@ -75,21 +76,21 @@ impl MemoryIndexer for CpuBus {
                 let register = 0x2000 | (address & 0x0007);
 
                 match register {
-                    0x2000 => self.ppu.registers.ppu_ctrl = value,
-                    0x2001 => self.ppu.registers.ppu_mask = value,
-                    0x2002 => self.ppu.registers.ppu_status = value,
-                    0x2003 => self.ppu.registers.oam_addr = value,
-                    0x2004 => self.ppu.registers.oam_data = value,
-                    0x2005 => self.ppu.registers.ppu_scroll = value,
-                    0x2006 => self.ppu.registers.ppu_addr = value,
-                    0x2007 => self.ppu.registers.ppu_data = value,
+                    0x2000 => self.ppu.registers.set_register(PPURegisters::PpuCtrl, value),
+                    0x2001 => self.ppu.registers.set_register(PPURegisters::PpuMask, value),
+                    0x2002 => self.ppu.registers.set_register(PPURegisters::PpuStatus, value),
+                    0x2003 => self.ppu.registers.set_register(PPURegisters::OamAddr, value),
+                    0x2004 => self.ppu.registers.set_register(PPURegisters::OamData, value),
+                    0x2005 => self.ppu.registers.set_register(PPURegisters::PpuScroll, value),
+                    0x2006 => self.ppu.registers.set_register(PPURegisters::PpuAddr, value),
+                    0x2007 => self.ppu.registers.set_register(PPURegisters::PpuData, value),
                     _ => unreachable!(),
                 }
             }
 
             // APU + I/O
             0x4000..=0x4017 => match address {
-                0x4014 => self.ppu.registers.oam_dma = value,
+                0x4014 => self.ppu.registers.set_register(PPURegisters::OamDma, value),
                 0x4016 => todo!("Controller strobe"),
                 0x4017 => todo!("APU frame counter"),
                 _ => todo!("APU register"),

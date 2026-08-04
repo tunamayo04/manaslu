@@ -10,7 +10,7 @@ mod shift;
 mod stack;
 pub mod transfer;
 
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::InstructionType::*;
 use crate::cpu::registers::Registers;
 use std::fmt::Debug;
@@ -141,16 +141,24 @@ impl<T> Debug for Instruction<T> {
     }
 }
 
+pub struct DebugInstruction {
+    pub instruction_type: InstructionType,
+    pub opcode: u8,
+    pub operand: Option<Operand>,
+    pub addressing_mode: AddressingMode,
+    pub address: u16,
+}
+
 pub struct InstructionSet<T> {
     instructions: [Option<Instruction<T>>; 256],
 }
-impl<T: MemoryIndexer> Default for InstructionSet<T> {
+impl<T: SerialInterface> Default for InstructionSet<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub fn new() -> InstructionSet<T> {
         let mut instructions = std::array::from_fn(|_| None);
 

@@ -1,13 +1,14 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub fn sta(
         instruction: &Instruction<T>,
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
+        println!("STA: {:04X}", instruction.opcode);
         let operand = instruction.operand.ok_or("Missing operand")?;
         let address = match operand {
             Operand::Address(address) => address,

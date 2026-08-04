@@ -11,7 +11,7 @@ pub fn init_logging() {
             .format(|out, message, _record| {
                 out.finish(format_args!("{}", message));
             })
-            .chain(File::create("actual-test.log").unwrap())
+            .chain(File::create("../actual-test.log").unwrap())
             .apply()
             .unwrap();
     });

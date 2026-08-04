@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use log::info;
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet, Operand};
 use crate::cpu::registers::Registers;
 
@@ -11,18 +12,18 @@ pub const NMI_VECTOR: u16 = 0xFFFA;
 pub const RST_VECTOR: u16 = 0xFFFC;
 pub const IRQ_VECTOR: u16 = 0xFFFE;
 
-pub struct CPU<T: MemoryIndexer> {
+pub struct CPU<T: SerialInterface> {
     registers: Registers,
     instruction_set: InstructionSet<T>,
     total_cycles: u32,
 }
-impl<T: MemoryIndexer> Default for CPU<T> {
+impl<T: SerialInterface> Default for CPU<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T: MemoryIndexer> CPU<T> {
+impl<T: SerialInterface> CPU<T> {
     pub fn new() -> Self {
         Self {
             registers: Registers::new(),

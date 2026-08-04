@@ -1,9 +1,9 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::IRQ_VECTOR;
 use crate::cpu::instruction_set::{AddressingMode, Instruction, InstructionSet};
 use crate::cpu::registers::Registers;
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub(crate) fn brk(
         instruction: &Instruction<T>,
         registers: &mut Registers,

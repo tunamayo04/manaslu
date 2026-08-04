@@ -1,8 +1,8 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use crate::cpu::instruction_set::{Instruction, InstructionSet};
 use crate::cpu::registers::Registers;
 
-impl<T: MemoryIndexer> InstructionSet<T> {
+impl<T: SerialInterface> InstructionSet<T> {
     pub fn nop(
         _instruction: &Instruction<T>,
         _registers: &mut Registers,

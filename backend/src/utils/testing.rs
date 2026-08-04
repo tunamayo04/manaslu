@@ -1,4 +1,4 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 
 pub struct TestBus {
     memory: Vec<u8>,
@@ -16,7 +16,7 @@ impl TestBus {
         }
     }
 }
-impl MemoryIndexer for TestBus {
+impl SerialInterface for TestBus {
     fn read_byte(&self, address: u16) -> u8 {
         self.memory[address as usize]
     }

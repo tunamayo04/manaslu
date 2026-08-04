@@ -7,6 +7,7 @@ pub struct Ppu {
     pub(crate) registers: Registers,
     current_scanline: u16,
     current_cycle: u16,
+    is_odd_frame: bool,
 }
 impl Ppu {
     pub fn new() -> Self {
@@ -14,6 +15,7 @@ impl Ppu {
             registers: Registers::new(),
             current_scanline: 261,
             current_cycle: 0,
+            is_odd_frame: false,
         }
     }
 
@@ -29,12 +31,18 @@ impl Ppu {
                     1 => {
                         self.registers.reset_ppu_status();
                     }
+                    _ => {},
                 }
             }
             0..=239 => { // Visible scanlines
                 match self.current_cycle {
                     0 => { /* Idle */ }
-                    1..=2 => { }
+                    1..=256 if self.current_cycle % 8 == 0 => {
+                        let nametable_byte = 0x2000 | (self.registers.v.get() & 0x0FFF);
+                    }
+                    _ => {
+
+                    },
                 }
             }
             240 => { // Post-render scanline

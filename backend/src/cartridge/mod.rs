@@ -1,6 +1,6 @@
-use crate::bus::MemoryIndexer;
+use crate::bus::SerialInterface;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum NametableMirroring {
@@ -59,7 +59,7 @@ impl INesHeader {
 }
 
 pub struct Cartridge {
-    path: Box<Path>,
+    path: PathBuf,
     header: INesHeader,
     trainer: Option<[u8; 512]>,
     prg_rom: Vec<u8>,
@@ -68,8 +68,8 @@ pub struct Cartridge {
     playchoice_prom: Option<[u8; 32]>,
 }
 impl Cartridge {
-    pub fn from_file(path: &Path) -> Result<Self, std::io::Error> {
-        let mut rom = std::fs::File::open(path)?;
+    pub fn from_file(path: PathBuf) -> Result<Self, std::io::Error> {
+        let mut rom = std::fs::File::open(&path)?;
 
         // iNes Header
         let mut header_buffer = [0; 16];
@@ -122,7 +122,7 @@ impl Cartridge {
         };
 
         Ok(Cartridge {
-            path: Box::from(path.to_path_buf()),
+            path,
             header,
             trainer,
             prg_rom,
@@ -135,7 +135,7 @@ impl Cartridge {
         self.header.nametable_mirroring
     }
 }
-impl MemoryIndexer for Cartridge {
+impl SerialInterface for Cartridge {
     fn read_byte(&self, address: u16) -> u8 {
         match address {
             0x6000..=0x7FFF => {
@@ -188,7 +188,7 @@ mod tests {
             <console type="0" region="0"/>
             <expansion type="1"/>
         </game> */
-        let path = Path::new("src/roms/hellokitty.nes");
+        let path = PathBuf::from("../roms/hellokitty.nes");
         let cartridge = Cartridge::from_file(path).unwrap();
 
         // Header
@@ -228,7 +228,7 @@ mod tests {
             <expansion type="1"/>
         </game>
          */
-        let path = Path::new("src/roms/herebreke.nes");
+        let path = PathBuf::from("../roms/herebreke.nes");
         let cartridge = Cartridge::from_file(path).unwrap();
 
         // Header

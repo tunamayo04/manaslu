@@ -1,10 +1,7 @@
-[package]
-name = "Manaslu"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+members = [
+    "backend",
+    "frontend",
+]
 
-[dependencies]
-sha1 = "0.11.0"
-hex-literal = "1.1.0"
-fern = "0.7.1"
-log = "0.4.33"
+resolver = "3"
