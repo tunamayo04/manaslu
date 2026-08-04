@@ -2,8 +2,8 @@ use crate::bus::MemoryIndexer;
 use std::io::Read;
 use std::path::Path;
 
-#[derive(Debug, PartialEq)]
-enum NametableMirroring {
+#[derive(Debug, PartialEq, Copy, Clone)]
+pub enum NametableMirroring {
     Horizontal,
     Vertical,
 }
@@ -11,7 +11,7 @@ enum NametableMirroring {
 pub struct INesHeader {
     prg_rom_size: u8, // Size of PRG ROM in KB
     chr_rom_size: u8, // Size of CHR ROM in KB (value 0 means the board uses CHR RAM)
-    nametable_mirroring: NametableMirroring,
+    pub nametable_mirroring: NametableMirroring,
     contains_battery_pack: bool,
     has_trainer: bool,
     alternative_nametable_layout: bool,
@@ -130,6 +130,9 @@ impl Cartridge {
             playchoice_inst_rom,
             playchoice_prom,
         })
+    }
+    pub fn mirroring(&self) -> NametableMirroring {
+        self.header.nametable_mirroring
     }
 }
 impl MemoryIndexer for Cartridge {

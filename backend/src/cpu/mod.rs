@@ -5,6 +5,7 @@ use crate::cpu::registers::Registers;
 
 pub mod instruction_set;
 pub mod registers;
+pub mod cpu_bus;
 
 pub const NMI_VECTOR: u16 = 0xFFFA;
 pub const RST_VECTOR: u16 = 0xFFFC;
@@ -41,7 +42,7 @@ impl<T: MemoryIndexer> CPU<T> {
         self.total_cycles = 7;
     }
 
-    pub fn step(&mut self, bus: &mut T) -> Result<(), String> {
+    pub fn step(&mut self, bus: &mut T) -> Result<u8, String> {
         let starting_program_counter = self.registers.program_counter;
         let (next_instruction, is_page_crossed) = self.fetch_next_instruction(bus)?;
 
@@ -70,7 +71,7 @@ impl<T: MemoryIndexer> CPU<T> {
             self.total_cycles += 1;
         }
 
-        Ok(())
+        Ok(cycles)
     }
 
     fn format_instruction_display(

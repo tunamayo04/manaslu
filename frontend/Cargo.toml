@@ -1,0 +1,13 @@
+[package]
+name = "frontend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+backend = { path = "../backend" }
+egui = "0.35.0"
+eframe = "0.35.0"
+env_logger = "0.11.11"
+egui_extras = "0.35.0"
+rfd = "0.17.2"
+rand = "0.10.2"
