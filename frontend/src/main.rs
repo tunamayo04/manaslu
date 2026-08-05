@@ -6,9 +6,10 @@ use std::time::Duration;
 use eframe::egui;
 use eframe::egui::Color32;
 use rand::RngExt;
-use backend::cpu;
+use backend::{cpu, ppu};
 use backend::cpu::registers::Flag;
 use backend::manaslu::Manaslu;
+use backend::ppu::registers::PPURegisters;
 
 const FB_WIDTH: usize = 256;
 const FB_HEIGHT: usize = 240;
@@ -73,7 +74,7 @@ impl Default for MyApp {
             rom_error: None,
             palettes: placeholder_palettes(),
             selected_palette: 0,
-            left_tab: LeftTab::Cpu,
+            left_tab: LeftTab::Ppu,
         }
     }
 }
@@ -81,7 +82,7 @@ impl Default for MyApp {
 impl eframe::App for MyApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         if let Some(backend) = &mut self.backend {
-            for _ in 0..1 {
+            for _ in 0..10 {
                 backend.tick();
             }
         }
@@ -242,6 +243,81 @@ impl MyApp {
     }
 
     fn show_ppu_tab(&mut self, ui: &mut egui::Ui) {
+        let Some(backend) = self.backend.as_ref() else {
+            ui.label("No ROM loaded.");
+            return;
+        };
+        let ppu = backend.cpu_bus().ppu();
+        let regs = ppu.registers();
+
+        ui.heading("Registers");
+        ui.add_space(4.0);
+
+
+        ui.horizontal(|ui| {
+            ui.label("PPUCTRL");
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuCtrl))).monospace(),
+                ),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.label("PPUMASK");
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuMask))).monospace(),
+                ),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.label("PPUSTAT");
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuStatus))).monospace(),
+                ),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.label("OAMADDR");
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::OamAddr))).monospace(),
+                ),
+            );
+        });
+        ui.horizontal(|ui| {
+            ui.label("PPUADDR");
+            ui.add(
+                egui::Label::new(
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuAddr))).monospace(),
+                ),
+            );
+        });
+
+        ui.horizontal(|ui| {
+            ui.horizontal(|ui| {
+                ui.label("Scanline");
+                ui.add(
+                    egui::Label::new(
+                        egui::RichText::new(format!("{:03}", ppu.current_scanline())).monospace(),
+                    ),
+                );
+            });
+            ui.add_space(8.0);
+            ui.horizontal(|ui| {
+                ui.label("Pixel");
+                ui.add(
+                    egui::Label::new(
+                        egui::RichText::new(format!("{:03}", ppu.current_cycle())).monospace(),
+                    ),
+                );
+            });
+        });
+
+
+
+        ui.add_space(16.0);
         ui.heading("Pattern Tables");
         ui.add_space(4.0);
 

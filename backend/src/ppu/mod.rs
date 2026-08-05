@@ -107,3 +107,17 @@ impl Ppu {
         }
     }
 }
+
+impl Ppu {
+    pub fn registers(&self) -> &Registers {
+        &self.registers
+    }
+
+    pub fn current_scanline(&self) -> u16 {
+        self.current_scanline
+    }
+
+    pub fn current_cycle(&self) -> u16 {
+        self.current_cycle
+    }
+}

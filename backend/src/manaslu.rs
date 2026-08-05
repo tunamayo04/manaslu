@@ -1,10 +1,7 @@
 use crate::cartridge::Cartridge;
 use crate::cpu::CPU;
-use std::path::{Path, PathBuf};
-use std::thread;
-use std::time::Duration;
+use std::path::{PathBuf};
 use crate::cpu::cpu_bus::CpuBus;
-use crate::cpu::instruction_set::{DebugInstruction, Instruction};
 
 pub struct Manaslu {
     cpu: CPU<CpuBus>,
@@ -27,9 +24,9 @@ impl Manaslu {
         let cycles = self.cpu.step(&mut self.cpu_bus).expect("oopsie daisy");
 
         for _ in 0..cycles {
-            self.cpu_bus.ppu().step();
-            self.cpu_bus.ppu().step();
-            self.cpu_bus.ppu().step();
+            self.cpu_bus.ppu_mut().step();
+            self.cpu_bus.ppu_mut().step();
+            self.cpu_bus.ppu_mut().step();
         }
     }
 
@@ -45,9 +42,9 @@ impl Manaslu {
             let cycles = self.cpu.step(&mut self.cpu_bus).expect("oopsie daisy");
 
             for _ in 0..cycles {
-                self.cpu_bus.ppu().step();
-                self.cpu_bus.ppu().step();
-                self.cpu_bus.ppu().step();
+                self.cpu_bus.ppu_mut().step();
+                self.cpu_bus.ppu_mut().step();
+                self.cpu_bus.ppu_mut().step();
             }
         }
     }

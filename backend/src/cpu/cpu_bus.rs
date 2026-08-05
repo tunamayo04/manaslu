@@ -20,8 +20,12 @@ impl CpuBus {
 }
 
 impl CpuBus {
-    pub fn ppu(&mut self) -> &mut Ppu {
+    pub fn ppu_mut(&mut self) -> &mut Ppu {
         &mut self.ppu
+    }
+
+    pub fn ppu(&self) -> &Ppu {
+        &self.ppu
     }
 }
 
