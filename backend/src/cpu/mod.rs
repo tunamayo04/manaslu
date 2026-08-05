@@ -350,6 +350,12 @@ impl<T: SerialInterface> CPU<T> {
     }
 }
 
+impl<T: SerialInterface> CPU<T> {
+    pub fn registers(&self) -> &Registers {
+        &self.registers
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
