@@ -8,7 +8,6 @@ impl<T: SerialInterface> InstructionSet<T> {
         registers: &mut Registers,
         bus: &mut T,
     ) -> Result<u8, String> {
-        println!("STA: {:04X}", instruction.opcode);
         let operand = instruction.operand.ok_or("Missing operand")?;
         let address = match operand {
             Operand::Address(address) => address,

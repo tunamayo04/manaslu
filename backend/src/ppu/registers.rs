@@ -95,22 +95,27 @@ impl Registers {
         self.oam_dma = 0;
     }
 
-    pub fn set_v_flag(&mut self, flag: VramAddressFlags, value: u16) {
+    pub(crate) fn set_status_flag(&mut self, flag: PpuStatusFlags, value: bool) {
+        let mask = flag as u8;
+        self.ppu_status = (self.ppu_status & !mask) | (if value { mask } else { 0 });
+    }
+
+    fn set_v_flag(&mut self, flag: VramAddressFlags, value: u16) {
         let mask = flag as u16;
         let shift = mask.trailing_zeros() as u8;
 
         self.v.set((self.v.get() & !mask) | value << shift);
     }
 
-    pub fn set_t_flag(&mut self, flag: VramAddressFlags, value: u16) {
+    fn set_t_flag(&mut self, flag: VramAddressFlags, value: u16) {
         let mask = flag as u16;
         let shift = mask.trailing_zeros() as u8;
 
         self.t = (self.t & !mask) | value << shift
     }
 
-    pub fn reset_ppu_status(&mut self) {
-        self.ppu_status &= 0b0001_0000;
+    pub(crate) fn reset_ppu_status(&mut self) {
+        self.ppu_status &= 0b0001_1111;
     }
 
     pub fn set_register(&mut self, register: PPURegisters, value: u8) {
