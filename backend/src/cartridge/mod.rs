@@ -8,6 +8,7 @@ pub enum NametableMirroring {
     Vertical,
 }
 
+#[derive(Clone)]
 pub struct INesHeader {
     prg_rom_size: u8, // Size of PRG ROM in KB
     chr_rom_size: u8, // Size of CHR ROM in KB (value 0 means the board uses CHR RAM)
@@ -58,6 +59,7 @@ impl INesHeader {
     }
 }
 
+#[derive(Clone)]
 pub struct Cartridge {
     path: PathBuf,
     header: INesHeader,

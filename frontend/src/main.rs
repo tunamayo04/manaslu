@@ -5,10 +5,14 @@ use std::time::Instant;
 use eframe::egui;
 use eframe::egui::Color32;
 use rand::RngExt;
-use backend::{cpu, ppu};
+use backend::cpu;
+use backend::bus::SerialInterface;
 use backend::manaslu::Manaslu;
 use backend::ppu::registers::PPURegisters;
 use backend::utils::{CPU_FREQ_HZ, PPU_HEIGHT, PPU_WIDTH};
+use crate::palettes::PALETTE;
+
+mod palettes;
 
 const PATTERN_TABLE_DIM: usize = 128;
 const NUM_PALETTES: usize = 8;
@@ -68,7 +72,7 @@ impl Default for MyApp {
             pattern_table_left_texture: None,
             pattern_table_right_texture: None,
             rom_error: None,
-            palettes: placeholder_palettes(),
+            palettes: [[Color32::from_gray(20); COLORS_PER_PALETTE]; NUM_PALETTES],
             selected_palette: 0,
             left_tab: LeftTab::Ppu,
             last_update: Instant::now(),
@@ -257,6 +261,7 @@ impl MyApp {
         };
         let ppu = backend.cpu_bus().ppu();
         let regs = ppu.registers();
+        let bus = ppu.bus();
 
         ui.heading("Registers");
         ui.add_space(4.0);
@@ -266,7 +271,7 @@ impl MyApp {
             ui.label("PPUCTRL");
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuCtrl))).monospace(),
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuCtrl, bus))).monospace(),
                 ),
             );
         });
@@ -274,7 +279,7 @@ impl MyApp {
             ui.label("PPUMASK");
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuMask))).monospace(),
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuMask, bus))).monospace(),
                 ),
             );
         });
@@ -282,7 +287,7 @@ impl MyApp {
             ui.label("PPUSTAT");
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuStatus))).monospace(),
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuStatus, bus))).monospace(),
                 ),
             );
         });
@@ -290,7 +295,7 @@ impl MyApp {
             ui.label("OAMADDR");
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::OamAddr))).monospace(),
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::OamAddr, bus))).monospace(),
                 ),
             );
         });
@@ -298,7 +303,7 @@ impl MyApp {
             ui.label("PPUADDR");
             ui.add(
                 egui::Label::new(
-                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuAddr))).monospace(),
+                    egui::RichText::new(format!("${:04X}", regs.get_register(PPURegisters::PpuAddr, bus))).monospace(),
                 ),
             );
         });
@@ -324,7 +329,6 @@ impl MyApp {
         });
 
 
-
         ui.add_space(16.0);
         ui.heading("Pattern Tables");
         ui.add_space(4.0);
@@ -343,30 +347,40 @@ impl MyApp {
             ui.add(egui::Image::new((tex.id(), egui::vec2(display_size, display_size))));
         }
 
+
         ui.add_space(12.0);
         ui.separator();
         ui.heading("Palettes");
         ui.add_space(4.0);
 
-        for pal_idx in 0..NUM_PALETTES {
-            ui.horizontal(|ui| {
-                let is_selected = self.selected_palette == pal_idx;
-                let label = if pal_idx < 4 {
-                    format!("BG {}", pal_idx)
-                } else {
-                    format!("SPR {}", pal_idx - 4)
-                };
+        if let Some(backend) = self.backend.as_ref() {
+            for pal_idx in 0..NUM_PALETTES {
+                ui.horizontal(|ui| {
+                    let is_selected = self.selected_palette == pal_idx;
+                    let label = if pal_idx < 4 {
+                        egui::RichText::new(format!("BG  {}", pal_idx)).monospace()
+                    } else {
+                        egui::RichText::new(format!("SPR {}", pal_idx - 4)).monospace()
+                    };
 
-                if ui.selectable_label(is_selected, label).clicked() {
-                    self.selected_palette = pal_idx;
-                }
+                    if ui.selectable_label(is_selected, label).clicked() {
+                        self.selected_palette = pal_idx;
+                    }
 
-                for color in &self.palettes[pal_idx] {
-                    let (rect, _response) =
-                        ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::click());
-                    ui.painter().rect_filled(rect, 0.0, *color);
-                }
-            });
+                    let ppu = backend.cpu_bus().ppu();
+
+                    // Iterate through all 4 color entries in this sub-palette
+                    for color_offset in 0..4 {
+                        let color_address = 0x3F00 + (pal_idx * 4) + color_offset;
+                        let color_byte = ppu.bus().read_byte(color_address as u16) & 0x3F; // Mask to valid palette index (0..63)
+                        let color = PALETTE[color_byte as usize];
+
+                        let (rect, _response) =
+                            ui.allocate_exact_size(egui::vec2(16.0, 16.0), egui::Sense::hover());
+                        ui.painter().rect_filled(rect, 0.0, color);
+                    }
+                });
+            }
         }
     }
 
@@ -460,15 +474,4 @@ impl MyApp {
             }
         }
     }
-}
-
-fn placeholder_palettes() -> [[Color32; COLORS_PER_PALETTE]; NUM_PALETTES] {
-    std::array::from_fn(|_| {
-        [
-            Color32::from_gray(20),
-            Color32::from_gray(90),
-            Color32::from_gray(160),
-            Color32::from_gray(230),
-        ]
-    })
 }

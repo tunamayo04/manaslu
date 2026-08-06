@@ -1,3 +1,5 @@
+use crate::bus::SerialInterface;
+use crate::cartridge::Cartridge;
 use crate::ppu::registers::Registers;
 pub use crate::utils::{PPU_HEIGHT, PPU_WIDTH};
 
@@ -6,6 +8,8 @@ pub mod ppu_bus;
 
 pub struct Ppu {
     pub(crate) registers: Registers,
+    pub(crate) bus: ppu_bus::PpuBus,
+
     current_scanline: u16,
     current_cycle: u16,
     is_odd_frame: bool,
@@ -13,9 +17,11 @@ pub struct Ppu {
     current_frame: u64,
 }
 impl Ppu {
-    pub fn new() -> Self {
+    pub fn new(cartridge: Cartridge) -> Self {
         Self {
             registers: Registers::new(),
+            bus: ppu_bus::PpuBus::new(cartridge),
+
             current_scanline: 261,
             current_cycle: 0,
             is_odd_frame: false,
@@ -31,6 +37,7 @@ impl Ppu {
     pub fn step(&mut self) {
         match self.current_scanline {
             261 => { // Pre-render scanline
+                //self.registers.is_rendering = true;
                 match self.current_cycle {
                     0 => {
                         // Idle
@@ -78,6 +85,13 @@ impl Ppu {
 
                         self.pixel_buffer[index..index + 4].copy_from_slice(&[r, g, b, 255]);
 
+
+                        if self.current_cycle % 8 == 0 {
+                            // Reload background shift registers
+                            let nametable_tile = self.bus.read_byte(0x2000 | self.registers.v.get() & 0xFFF);
+                        }
+
+
                         self.current_cycle += 1;
                     }
                     257..=320 => {
@@ -97,6 +111,8 @@ impl Ppu {
                 }
             }
             240 => { // Post-render scanline
+                //self.registers.is_rendering = false;
+
                 match self.current_cycle {
                     340 => {
                         self.current_cycle = 0;
@@ -150,5 +166,9 @@ impl Ppu {
 
     pub fn pixel_buffer(&self) -> &[u8] {
         &self.pixel_buffer
+    }
+
+    pub fn bus(&self) -> &ppu_bus::PpuBus {
+        &self.bus
     }
 }

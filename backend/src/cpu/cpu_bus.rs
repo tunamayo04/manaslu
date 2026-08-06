@@ -13,8 +13,8 @@ impl CpuBus {
     pub fn new(cartridge: Cartridge) -> Self {
         Self {
             ram: [0; 0x800],
-            cartridge,
-            ppu: Ppu::new(),
+            cartridge: cartridge.clone(), // TODO: Should not clone here
+            ppu: Ppu::new(cartridge.clone()),
         }
     }
 }
@@ -40,21 +40,21 @@ impl SerialInterface for CpuBus {
                 let register = 0x2000 | (address & 0x0007);
 
                 match register {
-                    0x2000 => self.ppu.registers.get_register(PPURegisters::PpuCtrl),
-                    0x2001 => self.ppu.registers.get_register(PPURegisters::PpuMask),
-                    0x2002 => self.ppu.registers.get_register(PPURegisters::PpuStatus),
-                    0x2003 => self.ppu.registers.get_register(PPURegisters::OamAddr),
-                    0x2004 => self.ppu.registers.get_register(PPURegisters::OamData),
-                    0x2005 => self.ppu.registers.get_register(PPURegisters::PpuScroll),
-                    0x2006 => self.ppu.registers.get_register(PPURegisters::PpuAddr),
-                    0x2007 => self.ppu.registers.get_register(PPURegisters::PpuData),
+                    0x2000 => self.ppu.registers.get_register(PPURegisters::PpuCtrl, &self.ppu.bus),
+                    0x2001 => self.ppu.registers.get_register(PPURegisters::PpuMask, &self.ppu.bus),
+                    0x2002 => self.ppu.registers.get_register(PPURegisters::PpuStatus, &self.ppu.bus),
+                    0x2003 => self.ppu.registers.get_register(PPURegisters::OamAddr, &self.ppu.bus),
+                    0x2004 => self.ppu.registers.get_register(PPURegisters::OamData, &self.ppu.bus),
+                    0x2005 => self.ppu.registers.get_register(PPURegisters::PpuScroll, &self.ppu.bus),
+                    0x2006 => self.ppu.registers.get_register(PPURegisters::PpuAddr, &self.ppu.bus),
+                    0x2007 => self.ppu.registers.get_register(PPURegisters::PpuData, &self.ppu.bus),
                     _ => unreachable!(),
                 }
             }
 
             // APU + I/O registers
             0x4000..=0x4017 => match address {
-                0x4014 => self.ppu.registers.get_register(PPURegisters::OamDma),
+                0x4014 => self.ppu.registers.get_register(PPURegisters::OamDma, &self.ppu.bus),
                 0x4016 => 0, // Controller 1,
                 0x4017 => 0, // "Controller 2 / APU,
                 _ => 0 // APU register,
@@ -80,21 +80,21 @@ impl SerialInterface for CpuBus {
                 let register = 0x2000 | (address & 0x0007);
 
                 match register {
-                    0x2000 => self.ppu.registers.set_register(PPURegisters::PpuCtrl, value),
-                    0x2001 => self.ppu.registers.set_register(PPURegisters::PpuMask, value),
-                    0x2002 => self.ppu.registers.set_register(PPURegisters::PpuStatus, value),
-                    0x2003 => self.ppu.registers.set_register(PPURegisters::OamAddr, value),
-                    0x2004 => self.ppu.registers.set_register(PPURegisters::OamData, value),
-                    0x2005 => self.ppu.registers.set_register(PPURegisters::PpuScroll, value),
-                    0x2006 => self.ppu.registers.set_register(PPURegisters::PpuAddr, value),
-                    0x2007 => self.ppu.registers.set_register(PPURegisters::PpuData, value),
+                    0x2000 => self.ppu.registers.set_register(PPURegisters::PpuCtrl, value, &mut self.ppu.bus),
+                    0x2001 => self.ppu.registers.set_register(PPURegisters::PpuMask, value, &mut self.ppu.bus),
+                    0x2002 => self.ppu.registers.set_register(PPURegisters::PpuStatus, value, &mut self.ppu.bus),
+                    0x2003 => self.ppu.registers.set_register(PPURegisters::OamAddr, value, &mut self.ppu.bus),
+                    0x2004 => self.ppu.registers.set_register(PPURegisters::OamData, value, &mut self.ppu.bus),
+                    0x2005 => self.ppu.registers.set_register(PPURegisters::PpuScroll, value, &mut self.ppu.bus),
+                    0x2006 => self.ppu.registers.set_register(PPURegisters::PpuAddr, value, &mut self.ppu.bus),
+                    0x2007 => self.ppu.registers.set_register(PPURegisters::PpuData, value, &mut self.ppu.bus),
                     _ => unreachable!(),
                 }
             }
 
             // APU + I/O
             0x4000..=0x4017 => match address {
-                0x4014 => self.ppu.registers.set_register(PPURegisters::OamDma, value),
+                0x4014 => self.ppu.registers.set_register(PPURegisters::OamDma, value, &mut self.ppu.bus),
                 0x4016 => (), // Controller strobe,
                 0x4017 => (), // APU frame counter,
                 _ => () // APU register,
