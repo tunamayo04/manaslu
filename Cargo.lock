@@ -483,6 +483,7 @@ dependencies = [
  "fern",
  "hex-literal",
  "log",
+ "rand 0.10.2",
  "sha1",
 ]
 

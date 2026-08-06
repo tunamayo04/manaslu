@@ -1,7 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::thread;
-use std::time::Duration;
 // hide console window on Windows in release
 use eframe::egui;
 use eframe::egui::Color32;
@@ -10,9 +8,8 @@ use backend::{cpu, ppu};
 use backend::cpu::registers::Flag;
 use backend::manaslu::Manaslu;
 use backend::ppu::registers::PPURegisters;
-
-const FB_WIDTH: usize = 256;
-const FB_HEIGHT: usize = 240;
+use backend::ppu::PPU_WIDTH;
+use backend::ppu::PPU_HEIGHT;
 
 const PATTERN_TABLE_DIM: usize = 128;
 const NUM_PALETTES: usize = 8;
@@ -42,7 +39,6 @@ struct MyApp {
     framebuffer_texture: Option<egui::TextureHandle>,
     pattern_table_left_texture: Option<egui::TextureHandle>,
     pattern_table_right_texture: Option<egui::TextureHandle>,
-    scale: usize,
     rom_error: Option<String>,
     palettes: [[Color32; COLORS_PER_PALETTE]; NUM_PALETTES],
     selected_palette: usize,
@@ -70,7 +66,6 @@ impl Default for MyApp {
             framebuffer_texture: None,
             pattern_table_left_texture: None,
             pattern_table_right_texture: None,
-            scale: 4,
             rom_error: None,
             palettes: placeholder_palettes(),
             selected_palette: 0,
@@ -391,18 +386,16 @@ impl MyApp {
     }
 
     fn update_framebuffer(&mut self, ctx: &egui::Context) {
-        let mut rng = rand::rng();
-        let mut pixels = Vec::with_capacity(FB_WIDTH * FB_HEIGHT * 4);
-        for _ in 0..FB_WIDTH * FB_HEIGHT {
-            let grey: u8 = rng.random();
-            pixels.extend_from_slice(&[grey, grey, grey, 255]);
-        }
-        let image = egui::ColorImage::from_rgba_unmultiplied([FB_WIDTH, FB_HEIGHT], &pixels);
-        match &mut self.framebuffer_texture {
-            Some(tex) => tex.set(image, egui::TextureOptions::NEAREST),
-            None => {
-                self.framebuffer_texture =
-                    Some(ctx.load_texture("framebuffer", image, egui::TextureOptions::NEAREST));
+        if let Some(backend) = self.backend.as_ref() {
+            let pixel_buffer = backend.cpu_bus().ppu().pixel_buffer();
+            let image = egui::ColorImage::from_rgba_unmultiplied([PPU_WIDTH, PPU_HEIGHT], &pixel_buffer);
+
+            match &mut self.framebuffer_texture {
+                Some(tex) => tex.set(image, egui::TextureOptions::NEAREST),
+                None => {
+                    self.framebuffer_texture =
+                        Some(ctx.load_texture("framebuffer", image, egui::TextureOptions::NEAREST));
+                }
             }
         }
     }

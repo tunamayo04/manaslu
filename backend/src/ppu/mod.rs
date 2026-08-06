@@ -1,13 +1,18 @@
+use rand::RngExt;
 use crate::ppu::registers::Registers;
 
 pub mod registers;
 pub mod ppu_bus;
+
+pub const PPU_WIDTH: usize = 256;
+pub const PPU_HEIGHT: usize = 240;
 
 pub struct Ppu {
     pub(crate) registers: Registers,
     current_scanline: u16,
     current_cycle: u16,
     is_odd_frame: bool,
+    pixel_buffer: [u8; PPU_WIDTH * PPU_HEIGHT * 4],
 }
 impl Ppu {
     pub fn new() -> Self {
@@ -16,6 +21,7 @@ impl Ppu {
             current_scanline: 261,
             current_cycle: 0,
             is_odd_frame: false,
+            pixel_buffer: [255; PPU_WIDTH * PPU_HEIGHT * 4],
         }
     }
 
@@ -53,7 +59,10 @@ impl Ppu {
                     }
 
                     1..=256 => {
-                        // let nametable_byte = 0x2000 | (self.registers.v.get() & 0x0FFF);
+                        let index = ((self.current_scanline as usize * PPU_WIDTH)
+                            + (self.current_cycle - 1) as usize) * 4;
+
+                        self.pixel_buffer[index..index + 4].copy_from_slice(&[self.current_scanline as u8, 0, self.current_cycle as u8, 255]);
 
                         self.current_cycle += 1;
                     }
@@ -109,9 +118,7 @@ impl Ppu {
 }
 
 impl Ppu {
-    pub fn registers(&self) -> &Registers {
-        &self.registers
-    }
+
 
     pub fn current_scanline(&self) -> u16 {
         self.current_scanline
@@ -119,5 +126,15 @@ impl Ppu {
 
     pub fn current_cycle(&self) -> u16 {
         self.current_cycle
+    }
+}
+
+impl Ppu {
+    pub fn registers(&self) -> &Registers {
+        &self.registers
+    }
+
+    pub fn pixel_buffer(&self) -> &[u8] {
+        &self.pixel_buffer
     }
 }
