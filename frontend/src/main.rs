@@ -1,15 +1,14 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::time::Instant;
 // hide console window on Windows in release
 use eframe::egui;
 use eframe::egui::Color32;
 use rand::RngExt;
 use backend::{cpu, ppu};
-use backend::cpu::registers::Flag;
 use backend::manaslu::Manaslu;
 use backend::ppu::registers::PPURegisters;
-use backend::ppu::PPU_WIDTH;
-use backend::ppu::PPU_HEIGHT;
+use backend::utils::{CPU_FREQ_HZ, PPU_HEIGHT, PPU_WIDTH};
 
 const PATTERN_TABLE_DIM: usize = 128;
 const NUM_PALETTES: usize = 8;
@@ -43,6 +42,8 @@ struct MyApp {
     palettes: [[Color32; COLORS_PER_PALETTE]; NUM_PALETTES],
     selected_palette: usize,
     left_tab: LeftTab,
+    last_update: Instant,
+    cycle_accumulator: f64,
 }
 
 impl MyApp {
@@ -70,15 +71,27 @@ impl Default for MyApp {
             palettes: placeholder_palettes(),
             selected_palette: 0,
             left_tab: LeftTab::Ppu,
+            last_update: Instant::now(),
+            cycle_accumulator: 0.0,
         }
     }
 }
 
 impl eframe::App for MyApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let now = Instant::now();
+        let mut dt = now.duration_since(self.last_update).as_secs_f64();
+        self.last_update = now;
+
+        if dt > 0.1 {
+            dt = 0.1;
+        }
+
         if let Some(backend) = &mut self.backend {
-            for _ in 0..10 {
-                backend.tick();
+            self.cycle_accumulator += dt * CPU_FREQ_HZ;
+            while self.cycle_accumulator >= 1.0 {
+                let cycles_spent = backend.tick();
+                self.cycle_accumulator -= cycles_spent as f64;
             }
         }
 

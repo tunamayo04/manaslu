@@ -20,7 +20,7 @@ impl Manaslu {
         })
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(&mut self) -> u8 {
         let cycles = self.cpu.step(&mut self.cpu_bus).expect("oopsie daisy");
 
         for _ in 0..cycles {
@@ -28,6 +28,8 @@ impl Manaslu {
             self.cpu_bus.ppu_mut().step();
             self.cpu_bus.ppu_mut().step();
         }
+
+        cycles
     }
 
     pub fn run(&mut self) {
@@ -36,7 +38,7 @@ impl Manaslu {
         }
     }
 
-    pub fn run_from_address(&mut self, address: u16) {
+    pub fn run_from_address(&mut self, address: u16) -> u8 {
         self.cpu.reset_at_address(address);
         loop {
             let cycles = self.cpu.step(&mut self.cpu_bus).expect("oopsie daisy");

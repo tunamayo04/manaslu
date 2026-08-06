@@ -55,9 +55,9 @@ impl SerialInterface for CpuBus {
             // APU + I/O registers
             0x4000..=0x4017 => match address {
                 0x4014 => self.ppu.registers.get_register(PPURegisters::OamDma),
-                0x4016 => todo!("Controller 1"),
-                0x4017 => todo!("Controller 2 / APU"),
-                _ => todo!("APU register"),
+                0x4016 => 0, // Controller 1,
+                0x4017 => 0, // "Controller 2 / APU,
+                _ => 0 // APU register,
             },
 
             // Normally disabled/test mode
@@ -95,9 +95,9 @@ impl SerialInterface for CpuBus {
             // APU + I/O
             0x4000..=0x4017 => match address {
                 0x4014 => self.ppu.registers.set_register(PPURegisters::OamDma, value),
-                0x4016 => todo!("Controller strobe"),
-                0x4017 => todo!("APU frame counter"),
-                _ => todo!("APU register"),
+                0x4016 => (), // Controller strobe,
+                0x4017 => (), // APU frame counter,
+                _ => () // APU register,
             },
 
             0x4018..=0x401F => {}

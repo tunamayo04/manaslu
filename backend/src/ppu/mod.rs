@@ -1,11 +1,8 @@
-use rand::RngExt;
 use crate::ppu::registers::Registers;
+pub use crate::utils::{PPU_HEIGHT, PPU_WIDTH};
 
 pub mod registers;
 pub mod ppu_bus;
-
-pub const PPU_WIDTH: usize = 256;
-pub const PPU_HEIGHT: usize = 240;
 
 pub struct Ppu {
     pub(crate) registers: Registers,
@@ -13,6 +10,7 @@ pub struct Ppu {
     current_cycle: u16,
     is_odd_frame: bool,
     pixel_buffer: [u8; PPU_WIDTH * PPU_HEIGHT * 4],
+    current_frame: u64,
 }
 impl Ppu {
     pub fn new() -> Self {
@@ -22,6 +20,7 @@ impl Ppu {
             current_cycle: 0,
             is_odd_frame: false,
             pixel_buffer: [255; PPU_WIDTH * PPU_HEIGHT * 4],
+            current_frame: 0,
         }
     }
 
@@ -36,6 +35,7 @@ impl Ppu {
                     0 => {
                         // Idle
                         self.current_cycle += 1;
+                        self.current_frame += 1;
                     }
                     1 => {
                         self.registers.reset_ppu_status();
@@ -59,10 +59,24 @@ impl Ppu {
                     }
 
                     1..=256 => {
-                        let index = ((self.current_scanline as usize * PPU_WIDTH)
-                            + (self.current_cycle - 1) as usize) * 4;
+                        let x = self.current_cycle as u8;
+                        let y = self.current_scanline as u8;
+                        let t = self.current_frame as u8;
 
-                        self.pixel_buffer[index..index + 4].copy_from_slice(&[self.current_scanline as u8, 0, self.current_cycle as u8, 255]);
+                        let index = ((y as usize * PPU_WIDTH) + x as usize) * 4;
+                        let u = x.wrapping_sub(128);
+                        let v = y.wrapping_sub(120);
+
+                        let pattern = (u ^ v).wrapping_mul(4);
+                        let depth = (u.wrapping_mul(u).wrapping_add(v.wrapping_mul(v))) >> 5;
+
+                        let intensity = pattern.wrapping_sub(depth).wrapping_add(t.wrapping_mul(4));
+
+                        let r = intensity;
+                        let g = intensity.wrapping_mul(2);
+                        let b = intensity.wrapping_add(128);
+
+                        self.pixel_buffer[index..index + 4].copy_from_slice(&[r, g, b, 255]);
 
                         self.current_cycle += 1;
                     }
